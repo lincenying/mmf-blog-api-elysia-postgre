@@ -202,7 +202,7 @@ chmod +x ./deploy-prod.sh && ./deploy-prod.sh
 常用命令：
 
 ```bash
-docker compose logs -f api_bun
+docker compose logs -f api_bun_postgre
 docker compose down
 ```
 

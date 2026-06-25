@@ -15,6 +15,7 @@ COPY ./config ./config
 COPY ./tsconfig.json ./tsconfig.json
 COPY ./.env ./.env
 COPY ./drizzle.config.ts ./drizzle.config.ts
+COPY ./drizzle-postgre ./drizzle-postgre
 
 COPY ./entrypoint-api.sh ./entrypoint-api.sh
 RUN chmod +x ./entrypoint-api.sh && ./entrypoint-api.sh

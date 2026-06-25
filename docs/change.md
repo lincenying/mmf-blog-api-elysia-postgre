@@ -1,5 +1,35 @@
 # 变更记录
 
+## 2026-06-25 16:30:00
+
+- **修复**：PostgreSQL 迁移前检测核心业务表是否已存在，已存在则跳过迁移，避免 `relation already exists` 导致启动失败。
+- **修复**：Dockerfile 移除构建阶段执行 `entrypoint-api.sh`，迁移改回容器启动时执行。
+
+---
+
+**本次改动建议的 commit message（未自动提交）：**
+
+```
+fix: 库表已存在时跳过 PostgreSQL 迁移
+```
+
+---
+
+## 2026-06-25 16:00:00
+
+- **修复**：`docker-compose.yml` 显式设置 `NODE_ENV=production`，避免 `.env` 中 `NODE_ENV=development` 覆盖镜像生产环境配置。
+- **修复**：`entrypoint-api.sh` 启动前 `export NODE_ENV=production`，确保迁移脚本加载 `production.yaml`。
+
+---
+
+**本次改动建议的 commit message（未自动提交）：**
+
+```
+fix: Docker 容器迁移与启动时强制使用生产环境配置
+```
+
+---
+
 ## 2026-06-25 14:00:00
 
 - **fix**：前台文章列表接口不再返回 `html` 字段，查询时显式排除该列以减少数据传输。
