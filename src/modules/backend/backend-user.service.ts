@@ -126,7 +126,7 @@ export class BackendUserService {
                 message = `${username}: 已经存在`
             }
             else {
-                await db.insert(admins).values({
+                const data = {
                     _id: generateObjectId(),
                     username,
                     password: md5(config.md5_salt + password),
@@ -135,7 +135,8 @@ export class BackendUserService {
                     update_date: getNowTime(),
                     is_delete: 0,
                     timestamp: Number(getNowTime('X')),
-                })
+                }
+                await db.insert(admins).values(data)
                 writeFileSync('./admin.lock', username)
                 message = `添加用户成功: ${username}, 密码: ${password}`
             }

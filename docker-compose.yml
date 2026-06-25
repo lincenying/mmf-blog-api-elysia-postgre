@@ -1,8 +1,8 @@
 services:
 
   api_bun:
-    container_name: api-bun-server
-    image: lincenying/bun-api-server:${TAG}
+    container_name: api-bun-server-postgre
+    image: lincenying/bun-api-server-postgre:${TAG}
     build:
       context: .
       dockerfile: ./Dockerfile

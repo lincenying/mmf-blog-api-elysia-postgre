@@ -53,14 +53,6 @@ CREATE TABLE `comments` (
 	`timestamp` integer
 );
 --> statement-breakpoint
-CREATE TABLE `genealogy` (
-	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`name` text NOT NULL,
-	`parent` integer NOT NULL,
-	`sex` text,
-	`desc` text
-);
---> statement-breakpoint
 CREATE TABLE `users` (
 	`_id` text PRIMARY KEY NOT NULL,
 	`username` text NOT NULL,

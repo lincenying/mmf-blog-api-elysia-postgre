@@ -112,7 +112,7 @@ export class FrontendUserService {
                 if (existing) {
                     throw new ApiError(API_CODE.VALIDATION, '该用户名已经存在')
                 }
-                await db.insert(users).values({
+                const data = {
                     _id: generateObjectId(),
                     username,
                     password: md5(config.md5_salt + password),
@@ -121,7 +121,8 @@ export class FrontendUserService {
                     update_date: getNowTime(),
                     is_delete: 0,
                     timestamp: Number(getNowTime('X')),
-                })
+                }
+                await db.insert(users).values(data)
                 return '注册成功!'
             }
             catch (err: unknown) {

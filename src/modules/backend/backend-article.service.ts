@@ -118,8 +118,8 @@ export class BackendArticleService {
         }
 
         const arr_category = category.split('|')
-        const _id = generateObjectId()
         const data = {
+            _id: generateObjectId(),
             title,
             category: arr_category[0],
             category_name: arr_category[1],
@@ -136,25 +136,8 @@ export class BackendArticleService {
         }
         try {
             const result = await db.transaction(async (tx) => {
-                const [inserted] = await tx.insert(articles).values({
-                    _id,
-                    title: data.title,
-                    category: data.category,
-                    category_name: data.category_name,
-                    content: data.content,
-                    html: data.html,
-                    toc: data.toc,
-                    visit: data.visit,
-                    like: data.like,
-                    comment_count: data.comment_count,
-                    creat_date: data.creat_date,
-                    update_date: data.update_date,
-                    is_delete: data.is_delete,
-                    timestamp: Number(data.timestamp),
-                }).returning()
-                await tx.update(categories)
-                    .set({ cate_num: increment(categories.cate_num) })
-                    .where(eq(categories._id, arr_category[0]))
+                const [inserted] = await tx.insert(articles).values(data).returning()
+                await tx.update(categories).set({ cate_num: increment(categories.cate_num) }).where(eq(categories._id, arr_category[0]))
                 return inserted
             })
             return withVirtualId({ ...result, likes: [] })
@@ -251,16 +234,17 @@ export class BackendArticleService {
 
         try {
             const result = await db.transaction(async (tx) => {
+                const data = {
+                    title,
+                    category,
+                    category_name,
+                    content,
+                    html: mdHtml,
+                    toc: mdToc,
+                    update_date: getNowTime(),
+                }
                 const [updated] = await tx.update(articles)
-                    .set({
-                        title,
-                        category,
-                        category_name,
-                        content,
-                        html: mdHtml,
-                        toc: mdToc,
-                        update_date: getNowTime(),
-                    })
+                    .set(data)
                     .where(eq(articles._id, _id))
                     .returning()
 

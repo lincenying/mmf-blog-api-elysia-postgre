@@ -1,8 +1,6 @@
-import type { Comment } from '~/types/comment.types'
 import type { ReqListQuery } from '~/types/global.types'
 
 import { and, count, desc, eq, type SQL } from 'drizzle-orm'
-
 import { articles, comments, db, users } from '~/db'
 import { ApiError } from '~/plugins/response-wrapper'
 import { API_CODE } from '~/types/api-code'
@@ -58,26 +56,18 @@ export class FrontendCommentService {
         }
         else {
             const _commentId = generateObjectId()
-            const data: Comment = {
+            const data = {
                 _id: _commentId,
                 article_id: _id,
                 userid,
                 content,
                 creat_date,
                 is_delete: 0,
-                timestamp,
+                timestamp: Number(timestamp),
             }
             try {
                 const result = await db.transaction(async (tx) => {
-                    const [inserted] = await tx.insert(comments).values({
-                        _id: _commentId,
-                        article_id: data.article_id,
-                        userid: data.userid as string,
-                        content: data.content,
-                        creat_date: data.creat_date,
-                        is_delete: data.is_delete,
-                        timestamp: Number(data.timestamp),
-                    }).returning()
+                    const [inserted] = await tx.insert(comments).values(data).returning()
                     await tx.update(articles)
                         .set({ comment_count: increment(articles.comment_count) })
                         .where(eq(articles._id, _id))

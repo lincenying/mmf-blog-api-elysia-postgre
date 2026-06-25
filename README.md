@@ -131,7 +131,6 @@ bun run db:postgre:migrate
 | `/backend` | 管理员初始化 Twig 页面 |
 | `/api/upload` | 文件上传 |
 | `/api/jwt` | JWT 示例 |
-| `/api/postgre` | PostgreSQL + Drizzle 示例 |
 | `/api/proxy` | 代理转发 |
 | `/chat` | WebSocket 聊天 |
 | `/public` | 静态资源（见 `config/*.yaml` 中 `static.prefix`） |
@@ -178,12 +177,12 @@ interface IApiResponse<T = unknown> {
 ### 仅 API 镜像
 
 ```bash
-docker build -t lincenying/bun-api-server:latest -f ./Dockerfile .
+docker build -t lincenying/bun-api-server-postgre:latest -f ./Dockerfile .
 docker run -d \
   -p 4080:4080 \
   --env-file .env \
-  --name container-bun-api-server \
-  lincenying/bun-api-server:latest
+  --name container-bun-api-server-postgre \
+  lincenying/bun-api-server-postgre:latest
 ```
 
 镜像内默认 `NODE_ENV=production`，监听 **4080**（见 `config/production.yaml`）。生产环境需配置 PostgreSQL 连接参数。

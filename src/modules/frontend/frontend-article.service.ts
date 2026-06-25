@@ -30,9 +30,7 @@ function removeFields(fields: string, filter: string) {
  * 查询用户已点赞的文章 ID 集合。
  */
 async function getUserLikedArticleIds(userId: string): Promise<Set<string>> {
-    const rows = await db.select({ article_id: articleLikes.article_id })
-        .from(articleLikes)
-        .where(eq(articleLikes.user_id, userId))
+    const rows = await db.select({ article_id: articleLikes.article_id }).from(articleLikes).where(eq(articleLikes.user_id, userId))
     return new Set(rows.map(r => r.article_id))
 }
 
