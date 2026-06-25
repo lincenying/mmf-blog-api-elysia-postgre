@@ -49,6 +49,3 @@ services:
 networks:
   webnet:
     driver: bridge
-
-volumes:
-  api_elysia_pg_data:
