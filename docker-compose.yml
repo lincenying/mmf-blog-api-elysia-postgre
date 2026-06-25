@@ -1,0 +1,50 @@
+services:
+
+  api_bun:
+    container_name: api-bun-server
+    image: lincenying/bun-api-server:${TAG}
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    env_file:
+      - .env
+    ports:
+      - 4080:4080
+    depends_on:
+      api_postgres:
+        condition: service_healthy
+    networks:
+      - webnet
+
+  api_postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_HOST: host.docker.internal
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 113511000
+      POSTGRES_DB: mmfblog_v2
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    volumes:
+      - api_elysia_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U postgres -d mmfblog_v2
+      interval: 3s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    restart: unless-stopped
+    ports:
+      - 5432:5432
+    networks:
+      - webnet
+
+networks:
+  webnet:
+    driver: bridge
+
+volumes:
+  api_elysia_pg_data:

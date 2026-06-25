@@ -1,0 +1,16 @@
+{% extends 'layout.twig' %}
+
+{% block content %}
+<div class="form-box">
+    <form method="post" action="/backend">
+        {% if message %}
+            <p>{{ message }}</p>
+        {% endif %}
+        <h1>添加管理员</h1>
+        <p><span>用户名: </span><input name="username" type="text" /></p>
+        <p><span>邮箱: </span><input name="email" type="text" /></p>
+        <p><span>密码: </span><input name="password" type="text" /></p>
+        <p><span></span><input class="form-btn" name="submit" type="submit" value="添加" /></p>
+    </form>
+</div>
+{% endblock %}

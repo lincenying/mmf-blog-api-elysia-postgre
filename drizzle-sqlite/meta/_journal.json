@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1775198317597,
+      "tag": "0000_blog_schema",
+      "breakpoints": true
+    }
+  ]
+}

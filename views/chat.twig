@@ -1,0 +1,59 @@
+{% extends 'layout.twig' %}
+
+{% block content %}
+    {% verbatim %}
+        <div class="chat-container">
+            <!-- 连接控制栏 -->
+            <div class="connection-bar">
+                <div class="control-group">
+                    <label>🔌 服务器地址</label>
+                    <input type="text" v-model="serverInput" placeholder="例如: localhost:4000 或 192.168.1.5:8080" :disabled="isConnected">
+                </div>
+                <div class="control-group">
+                    <label>🏠 房间号</label>
+                    <input type="text" v-model="roomInput" placeholder="房间名称" :disabled="isConnected">
+                </div>
+                <div class="control-group">
+                    <label>👤 昵称</label>
+                    <input type="text" v-model="nameInput" placeholder="你的名字" :disabled="isConnected">
+                </div>
+                <div class="action-buttons">
+                    <button class="primary" @click="connect" :disabled="isConnected || isConnecting">🔗 连接</button>
+                    <button class="danger" @click="disconnect" :disabled="!isConnected">❌ 断开</button>
+                    <div class="status-indicator">
+                        <span class="status-led" :class="{ connected: isConnected, connecting: isConnecting }"></span>
+                        <span>{{ statusText }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 聊天消息展示区 (Vue 渲染) -->
+            <div class="messages-area" ref="messagesContainer">
+                <div v-for="(msg, idx) in messages" :key="idx" class="message-item" :class="msg.type">
+                    <div class="bubble">
+                        <template v-if="msg.type !== 'system'">
+                            <div class="message-name">{{ msg.name }}</div>
+                            <div class="message-text">{{ msg.message }}</div>
+                            <div class="message-time">{{ msg.timeStr }}</div>
+                        </template>
+                        <template v-else>
+                            <div class="message-text">📢 {{ msg.message }}</div>
+                            <div class="message-time">{{ msg.timeStr }}</div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 底部发送栏 -->
+            <div class="send-area">
+                <input type="text" v-model="messageContent" placeholder="输入消息..." @keyup.enter="sendMessage" :disabled="!isConnected">
+                <button @click="sendMessage" :disabled="!isConnected">📨 发送</button>
+            </div>
+        </div>
+    {% endverbatim %}
+{% endblock %}
+
+{% block script %}
+<script src="/public/global/vue.global.js"></script>
+<script src="/public/js/chat.js"></script>
+{% endblock %}

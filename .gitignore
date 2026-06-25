@@ -1,0 +1,15 @@
+.DS_Store
+.env
+.env.development
+.env.production
+node_modules/
+npm-debug.log
+admin.lock
+src/config/_secret.js
+src/config/_qiniu.js
+uploads/
+
+*-port.txt
+dist/
+/server-*
+.cursor/rules/global*.mdc
