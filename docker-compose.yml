@@ -23,7 +23,7 @@ services:
   api_postgres:
     image: postgres:18.3-alpine
     environment:
-      POSTGRES_HOST: host.docker.internal
+      POSTGRES_HOST: 0.0.0.0
       POSTGRES_PORT: 5432
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 113511000

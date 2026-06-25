@@ -23,9 +23,7 @@ convict.addParser({ extension: ['yml', 'yaml'], parse: yaml.load })
 
 // 创建配置实例
 const configInstance = convict(configSchema, {
-    env: {
-        NODE_ENV: process.env.NODE_ENV,
-    },
+    env: process.env,
 })
 
 // 获取当前环境

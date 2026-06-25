@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { migrate as migrateSqlite } from 'drizzle-orm/bun-sqlite/migrator'
-import { db } from './bun-sqlite'
+import { db } from '../bun-sqlite'
 
 (async () => {
     try {

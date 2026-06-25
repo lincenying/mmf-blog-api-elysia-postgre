@@ -15,6 +15,8 @@ export async function ensurePostgresDatabase() {
         postgre_db,
     } = config.db
 
+    console.log(postgre_host)
+
     if (!DB_NAME_PATTERN.test(postgre_db)) {
         throw new Error(`Invalid PostgreSQL database name: ${postgre_db}`)
     }

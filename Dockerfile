@@ -17,9 +17,6 @@ COPY ./.env ./.env
 COPY ./drizzle.config.ts ./drizzle.config.ts
 COPY ./drizzle-postgre ./drizzle-postgre
 
-COPY ./entrypoint-api.sh ./entrypoint-api.sh
-RUN chmod +x ./entrypoint-api.sh && ./entrypoint-api.sh
-
 
 RUN bun build \
 	--compile \
@@ -33,6 +30,10 @@ FROM oven/bun:1.3
 WORKDIR /app
 
 COPY --from=build /app/server server
+COPY --from=build /app/drizzle-postgre drizzle-postgre
+COPY --from=build /app/node_modules node_modules
+COPY ./src ./src
+COPY ./tsconfig.json ./tsconfig.json
 COPY ./package.json ./package.json
 COPY ./config ./config
 COPY ./views ./views
@@ -44,7 +45,10 @@ COPY ./dist/index.html ./dist/index.html
 
 ENV NODE_ENV=production
 
+COPY ./entrypoint-api.sh ./entrypoint-api.sh
+RUN chmod +x ./entrypoint-api.sh
+
 EXPOSE 4080
 
-CMD ["./server"]
+CMD ["./entrypoint-api.sh", "./server"]
 
