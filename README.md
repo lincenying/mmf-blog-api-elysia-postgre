@@ -1,4 +1,4 @@
-# mmf-blog-api-elysia
+# mmf-blog-api-elysia-postgre
 
 基于 [Bun](https://bun.sh) 与 [Elysia.js](https://elysiajs.com) 的博客 API 服务，为 MMF Blog 提供前后台 REST、WebSocket、文件上传与模板渲染能力。
 
@@ -21,7 +21,6 @@
 - **后台 API**（`/api/backend`）：分类、文章、用户、管理员登录（Cookie 会话）
 - **管理员初始化**（`/backend`）：Twig 页面首次创建管理员
 - **上传**（`/api/upload`）、**代理**（`/api/proxy`）、**JWT 示例**（`/api/jwt`）
-- **PostgreSQL 示例**（`/api/postgre`）
 - **WebSocket**（`/chat`）：聊天室
 - **开发环境 Swagger**：`http://localhost:4000/docs`（仅 `NODE_ENV=development`）
 
