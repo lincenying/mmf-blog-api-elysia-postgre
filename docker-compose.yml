@@ -17,6 +17,9 @@ services:
     depends_on:
       api_postgres:
         condition: service_healthy
+    volumes:
+      - ./uploads:/app/uploads
+      - ./.data:/app/.data
     networks:
       - webnet
 

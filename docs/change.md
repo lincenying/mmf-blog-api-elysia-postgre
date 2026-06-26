@@ -1,5 +1,50 @@
 # 变更记录
 
+## 2026-06-26 09:24:09
+
+- **修复**：Dockerfile 运行阶段将 Debian apt 源替换为阿里云镜像，解决国内构建时 `502 Bad Gateway` 导致 `apt-get` 失败。
+
+---
+
+**本次改动建议的 commit message（未自动提交）：**
+
+```
+fix: Docker 构建使用阿里云 Debian 镜像源
+```
+
+---
+
+## 2026-06-26 09:22:07
+
+- **修复**：Dockerfile 运行阶段改为从构建上下文复制 `drizzle-postgre`，修复构建阶段未包含该目录导致的 COPY 失败。
+
+---
+
+**本次改动建议的 commit message（未自动提交）：**
+
+```
+fix: 修复 Docker 构建时 drizzle-postgre 目录缺失
+```
+
+---
+
+## 2026-06-26 09:06:14
+
+- **优化**：Dockerfile 构建阶段额外 compile `migrate` 二进制，运行阶段移除 `node_modules`、`src`、`package.json`、`tsconfig.json` 及 Bun 运行时。
+- **优化**：运行镜像改用 `debian:bookworm-slim`，仅保留 `server`、`migrate`、`drizzle-postgre` 与业务所需静态资源。
+- **优化**：`entrypoint-api.sh` 改为直接执行 `./migrate` 与 `./server`，不再依赖 `bun run`。
+- **优化**：`docker-compose.yml` 为 `uploads`、`.data` 增加 volume 挂载，避免打入镜像。
+
+---
+
+**本次改动建议的 commit message（未自动提交）：**
+
+```
+perf: 编译 migrate 二进制并精简 Docker 运行镜像
+```
+
+---
+
 ## 2026-06-25 16:30:00
 
 - **修复**：PostgreSQL 迁移前检测核心业务表是否已存在，已存在则跳过迁移，避免 `relation already exists` 导致启动失败。
