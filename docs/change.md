@@ -1,5 +1,24 @@
 # 变更记录
 
+## 2026-06-26 10:30:00
+
+- **Schema**：点赞表 `article_likes` 重命名为 `likes`（SQLite / PostgreSQL 双端同步）。
+- **Schema**：`likes` 表新增 `_id`（主键）、`creat_date`、`timestamp` 字段，与其他业务表字段风格一致。
+- **Schema**：主键由 `(article_id, user_id)` 复合主键改为 `_id`，并保留 `(article_id, user_id)` 唯一约束以防重复点赞。
+- **业务**：`FrontendLikeService.like` 插入点赞记录时补充 `_id`、`creat_date`、`timestamp`。
+- **迁移**：新增 PostgreSQL 迁移 `drizzle-postgre/0002_big_thaddeus_ross.sql`（创建 `likes` 表并删除 `article_likes`）。
+- **工具**：`has-postgres-schema-tables.ts` 核心表检测由 `article_likes` 更新为 `likes`。
+
+---
+
+**本次改动建议的 commit message（未自动提交）：**
+
+```
+refactor: 点赞表重命名为 likes 并补充标准字段
+```
+
+---
+
 ## 2026-06-26 09:24:09
 
 - **修复**：Dockerfile 运行阶段将 Debian apt 源替换为阿里云镜像，解决国内构建时 `502 Bad Gateway` 导致 `apt-get` 失败。

@@ -28,7 +28,7 @@ RUN bun build \
 	--outfile migrate \
 	src/db/utils/migrate.ts
 
-FROM debian:bookworm-slim
+FROM debian:bookworm-20260623-slim
 
 WORKDIR /app
 

@@ -12,3 +12,4 @@ uploads/
 dist/
 /server-*
 .cursor/rules/global*.mdc
+.qoder/rules/global*.mdc

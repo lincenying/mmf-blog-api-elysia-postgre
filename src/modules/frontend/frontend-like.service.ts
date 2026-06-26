@@ -3,9 +3,9 @@ import { and, count, eq } from 'drizzle-orm'
 import { articleLikes, articles, db } from '~/db'
 import { ApiError } from '~/plugins/response-wrapper'
 import { API_CODE } from '~/types/api-code'
-import { getErrorMessage } from '~/utils'
+import { getErrorMessage, getNowTime } from '~/utils'
 import { decrement, increment } from '~/utils/drizzle-helpers'
-import { isValidObjectId } from '~/utils/object-id'
+import { generateObjectId, isValidObjectId } from '~/utils/object-id'
 
 /**
  * 前台点赞业务（Drizzle）。
@@ -37,8 +37,11 @@ export class FrontendLikeService {
                 if (!existing) {
                     await db.transaction(async (tx) => {
                         await tx.insert(articleLikes).values({
+                            _id: generateObjectId(),
                             article_id,
                             user_id,
+                            creat_date: getNowTime(),
+                            timestamp: Number(getNowTime('X')),
                         })
                         await tx.update(articles)
                             .set({ like: increment(articles.like) })

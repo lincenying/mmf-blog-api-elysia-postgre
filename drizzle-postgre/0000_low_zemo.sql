@@ -9,10 +9,13 @@ CREATE TABLE "admins" (
 	"timestamp" integer
 );
 --> statement-breakpoint
-CREATE TABLE "article_likes" (
+CREATE TABLE "likes" (
+	"_id" text PRIMARY KEY NOT NULL,
 	"article_id" text NOT NULL,
 	"user_id" text NOT NULL,
-	CONSTRAINT "article_likes_article_id_user_id_pk" PRIMARY KEY("article_id","user_id")
+	"creat_date" text DEFAULT '' NOT NULL,
+	"timestamp" integer,
+	CONSTRAINT "likes_article_id_user_id_unique" UNIQUE("article_id","user_id")
 );
 --> statement-breakpoint
 CREATE TABLE "articles" (
@@ -53,13 +56,15 @@ CREATE TABLE "comments" (
 	"timestamp" integer
 );
 --> statement-breakpoint
-ALTER TABLE "users" DROP CONSTRAINT "users_email_unique";--> statement-breakpoint
-ALTER TABLE "users" ALTER COLUMN "creat_date" SET DATA TYPE text;--> statement-breakpoint
-ALTER TABLE "users" ALTER COLUMN "creat_date" SET DEFAULT '';--> statement-breakpoint
-ALTER TABLE "users" ALTER COLUMN "creat_date" SET NOT NULL;--> statement-breakpoint
-ALTER TABLE "users" ALTER COLUMN "is_delete" SET NOT NULL;--> statement-breakpoint
-ALTER TABLE "users" ALTER COLUMN "update_date" SET DATA TYPE text;--> statement-breakpoint
-ALTER TABLE "users" ALTER COLUMN "update_date" SET DEFAULT '';--> statement-breakpoint
-ALTER TABLE "users" ALTER COLUMN "update_date" SET NOT NULL;--> statement-breakpoint
-ALTER TABLE "users" ADD COLUMN "wx_avatar" text;--> statement-breakpoint
-ALTER TABLE "users" ADD COLUMN "wx_signature" text;
+CREATE TABLE "users" (
+	"_id" text PRIMARY KEY NOT NULL,
+	"username" text NOT NULL,
+	"email" text NOT NULL,
+	"password" text NOT NULL,
+	"creat_date" text DEFAULT '' NOT NULL,
+	"update_date" text DEFAULT '' NOT NULL,
+	"is_delete" integer DEFAULT 0 NOT NULL,
+	"timestamp" integer,
+	"wx_avatar" text,
+	"wx_signature" text
+);

@@ -6,7 +6,7 @@ const CORE_TABLES = [
     'categories',
     'comments',
     'admins',
-    'article_likes',
+    'likes',
 ] as const
 
 /**

@@ -24,7 +24,8 @@ services:
       - webnet
 
   api_postgres:
-    image: postgres:18.3-alpine
+    container_name: api-postgres
+    image: postgres:18.4-alpine
     environment:
       POSTGRES_HOST: 0.0.0.0
       POSTGRES_PORT: 5432
