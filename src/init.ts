@@ -50,7 +50,8 @@ function creatProjectFiles() {
     }
 
     if (!fsExistsSync('./.env')) {
-        const env = `TAG=1.26.0625`
+        const env = `TAG=1.26.0625
+POSTGRES_DIR=/var/lib/postgresql`
         writeFileSync('./.env', env)
         console.log('./.env: 生成成功')
     }
