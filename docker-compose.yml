@@ -35,7 +35,7 @@ services:
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     volumes:
-      - /Users/lincenying/web/postgresql/data:/var/lib/postgresql
+      - ${POSTGRES_DIR:-/var/lib/postgresql}:/var/lib/postgresql
     healthcheck:
       test:
         - CMD-SHELL
