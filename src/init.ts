@@ -50,9 +50,7 @@ function creatProjectFiles() {
     }
 
     if (!fsExistsSync('./.env')) {
-        const env = `TAG=1.26.0625
-NODE_ENV=development
-`
+        const env = `TAG=1.26.0625`
         writeFileSync('./.env', env)
         console.log('./.env: 生成成功')
     }

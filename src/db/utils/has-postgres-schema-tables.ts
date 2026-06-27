@@ -18,7 +18,7 @@ export async function hasPostgresSchemaTables(pool: Pool): Promise<boolean> {
             SELECT 1
             FROM information_schema.tables
             WHERE table_schema = 'public'
-              AND table_name = ANY($1::text[])
+            AND table_name = ANY($1::text[])
         ) AS exists`,
         [CORE_TABLES],
     )
