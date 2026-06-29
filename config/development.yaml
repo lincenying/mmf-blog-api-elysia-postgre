@@ -78,5 +78,5 @@ db:
   postgre_host: localhost
   postgre_port: 5432
   postgre_user: postgres
-  postgre_password: '113511000'
+  postgre_password: 替换成postgre的密码
   postgre_db: mmfblog_v2

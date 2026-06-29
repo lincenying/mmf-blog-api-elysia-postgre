@@ -67,19 +67,19 @@ export const configSchema = {
         name: {
             doc: '应用程序名称',
             format: String,
-            default: 'MMF Blog API',
+            default: '',
             env: 'APP_NAME',
         },
         version: {
             doc: '应用程序版本号',
             format: String,
-            default: '1.0.0',
+            default: '',
             env: 'APP_VERSION',
         },
         description: {
             doc: '应用程序描述',
             format: String,
-            default: 'A modern web API built with Bun and ElysiaJS',
+            default: '',
             env: 'APP_DESCRIPTION',
         },
     },
@@ -249,13 +249,13 @@ export const configSchema = {
         postgre_password: {
             doc: 'PostgreSQL 密码',
             format: String,
-            default: '113511000',
+            default: '',
             env: 'POSTGRES_PASSWORD',
         },
         postgre_db: {
             doc: 'PostgreSQL 数据库',
             format: String,
-            default: 'mmfblog_v2',
+            default: '',
             env: 'POSTGRES_DB',
         },
     },

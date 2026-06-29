@@ -44,6 +44,8 @@ COPY ./drizzle-postgre ./drizzle-postgre
 COPY ./config ./config
 COPY ./views ./views
 COPY ./public ./public
+COPY .env ./.env
+COPY .env.production ./.env.production
 COPY ./dist/index.html ./dist/index.html
 
 RUN mkdir -p uploads .data

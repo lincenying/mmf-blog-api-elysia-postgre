@@ -38,7 +38,7 @@
 bun install
 ```
 
-### 2. 生成本地密钥与七牛占位配置
+### 2. 生成本地密钥
 
 ```bash
 bun run init:config
@@ -47,12 +47,14 @@ bun run init:config
 会在 `src/config/` 下生成（已加入 `.gitignore`，勿提交仓库）：
 
 - `_secret.js` — JWT 签名密钥
-- `_qiniu.js` — 七牛云占位（按需填写）
 
 ### 3. 配置环境
 
 ```bash
 cp .env.development.example .env.development
+cp .env.production.example .env.production
+# 然后修改 .env.development 和 .env.production 的`POSTGRES_PASSWORD`
+# 或者修改 config/development.yaml 和 config/production.yaml 的`postgre_password`也可以
 ```
 
 按需修改数据库、CORS、端口等。应用同时会加载 `config/development.yaml`（或 `config/production.yaml`），**环境变量优先级高于 YAML**。
@@ -107,7 +109,7 @@ bun run lint
 bun run lint:fix
 
 # 构建
-bun run build
+bun run build                # → ./dist/index.js
 NODE_ENV=production bun run start
 
 # 编译为单文件可执行（按平台）
@@ -181,6 +183,7 @@ docker build -t lincenying/bun-api-server-postgre:latest -f ./Dockerfile .
 docker run -d \
   -p 4080:4080 \
   --env-file .env \
+  --env-file .env.production \
   --name container-bun-api-server-postgre \
   lincenying/bun-api-server-postgre:latest
 ```
@@ -211,11 +214,13 @@ docker compose down
 若 `docker.io` 拉取失败，可先拉取华为云镜像并打 tag（版本号以 `docker-compose.yml` / `Dockerfile` 为准）：
 
 ```bash
-docker pull swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/oven/bun:1.3.11
-docker tag swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/oven/bun:1.3.11 oven/bun:1.3
+docker pull swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/oven/bun:1.3.14
+docker tag swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/oven/bun:1.3.14 oven/bun:1.3
+docker rmi swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/oven/bun:1.3.14
 
-docker pull swr.cn-east-3.myhuaweicloud.com/kubesre/docker.io/postgres:16.13-alpine3.23-linux-amd64
-docker tag swr.cn-east-3.myhuaweicloud.com/kubesre/docker.io/postgres:16.13-alpine3.23-linux-amd64 postgres:16-alpine
+docker pull swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/postgres:18.4-alpine3.23
+docker tag swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/postgres:18.4-alpine3.23 postgres:18.4-alpine
+docker rmi swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/postgres:18.4-alpine3.23
 ```
 
 ## 开发说明

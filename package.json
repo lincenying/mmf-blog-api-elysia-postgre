@@ -10,7 +10,7 @@
     "build:compile:linux": "bun run build/build-linux.ts",
     "build:compile:win": "bun run build/build-win.ts",
     "init:config": "bun run src/init.ts",
-    "start": "bun run dist/index.js",
+    "start": "NODE_ENV=production bun run dist/index.js",
     "db:postgre:generate": "bun drizzle-kit generate",
     "db:postgre:migrate": "bun run src/db/utils/migrate.ts",
     "db:sqlite:generate": "bun drizzle-kit generate --config=./drizzle-sqlite.config.ts",
