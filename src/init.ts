@@ -1,4 +1,5 @@
 import { accessSync, constants, mkdirSync, writeFileSync } from 'fs'
+import { getNowTime } from './utils'
 
 function fsExistsSync(path: string) {
     try {
@@ -50,7 +51,8 @@ function creatProjectFiles() {
     }
 
     if (!fsExistsSync('./.env')) {
-        const env = `TAG=1.26.0625
+        const date = getNowTime('YY.MMDD')
+        const env = `TAG=1.${date}
 POSTGRES_DIR=/var/lib/postgresql`
         writeFileSync('./.env', env)
         console.log('./.env: 生成成功')
