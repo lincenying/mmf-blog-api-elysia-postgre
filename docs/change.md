@@ -1,5 +1,20 @@
 # 变更记录
 
+## 2026-07-23 14:33:28
+
+- **修复**：关闭 `build/*.ts` 中 `minify.identifiers`，避免 Elysia 依赖的 `constructor.name`（如 `ElysiaFile`）被混淆。
+- **现象**：生产编译包（`server-mac` / `dist/index.js`）访问 `/favicon.ico`、`/robots.txt`、`/*` 时返回 `[object Object]`，`Content-Type` 为 `application/octet-stream`，浏览器触发下载。
+
+---
+
+**本次改动建议的 commit message（未自动提交）：**
+
+```
+fix: 关闭构建标识符混淆以修复静态文件被下载
+```
+
+---
+
 ## 2026-06-26 10:30:00
 
 - **Schema**：点赞表 `article_likes` 重命名为 `likes`（SQLite / PostgreSQL 双端同步）。

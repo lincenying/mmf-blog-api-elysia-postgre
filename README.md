@@ -117,6 +117,9 @@ bun run build:compile:mac    # → ./server-mac
 bun run build:compile:linux  # → ./server-linux
 bun run build:compile:win    # → ./server-win.exe
 
+# 运行
+NODE_ENV=production POSTGRES_PASSWORD=密码 POSTGRES_HOST=127.0.0.1 ./server-mac
+
 # Drizzle 迁移
 bun run db:sqlite:generate
 bun run db:sqlite:migrate

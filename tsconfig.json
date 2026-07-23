@@ -22,7 +22,7 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*", "drizzle.config.ts", "drizzle-sqlite.config.ts", "eslint.config.ts", "config/**/*"],
+  "include": ["src/**/*", "drizzle.config.ts", "drizzle-sqlite.config.ts", "eslint.config.ts", "config/**/*", "build/**/*"],
   "exclude": ["node_modules", "dist/**/*", "public/**/*"],
   "tsc-alias": {
     "resolveFullPaths": true

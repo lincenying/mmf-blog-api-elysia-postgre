@@ -15,7 +15,8 @@
         minify: {
             whitespace: true,
             syntax: true,
-            identifiers: true,
+            // Elysia 通过 constructor.name 识别 ElysiaFile 等响应类型，混淆标识符会导致静态文件变成 [object Object]
+            identifiers: false,
         },
         define: {
             'process.env.NODE_ENV': JSON.stringify('production'),
