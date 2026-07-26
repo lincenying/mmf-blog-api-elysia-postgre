@@ -1,5 +1,33 @@
 # 变更记录
 
+## 2026-07-26 08:32:00
+
+- **部署**：`deploy-prod.sh` 为所有 `docker compose` 命令显式传入 `--env-file .env --env-file .env.production`，确保 `docker-compose.yml` 中 `${POSTGRES_DIR}`、`${POSTGRES_PASSWORD}` 等插值能读取到环境文件。
+
+---
+
+**本次改动建议的 commit message（未自动提交）：**
+
+```
+fix: deploy-prod 显式加载 env 文件供 compose 插值
+```
+
+---
+
+## 2026-07-26 08:26:00
+
+- **修复**：`docker-compose.yml` 中 `POSTGRES_PASSWORD` 变量替换语法由 `${POSTGRES_PASSWORD:postgres}` 改为 `${POSTGRES_PASSWORD:-postgres}`，未设置或为空时默认 `postgres`；`POSTGRES_DIR` 保持 `${POSTGRES_DIR:-/var/lib/postgresql}` 写法不变。
+
+---
+
+**本次改动建议的 commit message（未自动提交）：**
+
+```
+fix: 修正 docker-compose 中 POSTGRES_PASSWORD 默认值语法
+```
+
+---
+
 ## 2026-07-23 14:33:28
 
 - **修复**：关闭 `build/*.ts` 中 `minify.identifiers`，避免 Elysia 依赖的 `constructor.name`（如 `ElysiaFile`）被混淆。

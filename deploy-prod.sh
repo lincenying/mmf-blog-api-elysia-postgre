@@ -7,16 +7,18 @@ cd "$ROOT"
 
 COMPOSE_FILE="docker-compose.yml"
 COMPOSE_FILES=(-f "$COMPOSE_FILE")
+# Compose 插值（如 ${POSTGRES_DIR}）默认只读项目根 .env；显式加载 .env / .env.production 避免遗漏
+ENV_FILES=(--env-file .env --env-file .env.production)
 
 echo ">>> 启动 PostgreSQL"
-docker compose "${COMPOSE_FILES[@]}" up -d api_postgres
+docker compose "${ENV_FILES[@]}" "${COMPOSE_FILES[@]}" up -d api_postgres
 
 PG_USER="postgres"
 PG_DB="mmfblog_v2"
 echo ">>> 等待 PostgreSQL 就绪 (${PG_USER} / ${PG_DB})"
 pg_ok=0
 for _ in $(seq 1 60); do
-  if docker compose "${COMPOSE_FILES[@]}" exec -T api_postgres pg_isready -U "$PG_USER" -d "$PG_DB" >/dev/null 2>&1; then
+  if docker compose "${ENV_FILES[@]}" "${COMPOSE_FILES[@]}" exec -T api_postgres pg_isready -U "$PG_USER" -d "$PG_DB" >/dev/null 2>&1; then
     pg_ok=1
     echo ">>> PostgreSQL 已就绪 (${PG_USER} / ${PG_DB})"
     break
@@ -29,10 +31,10 @@ if [[ "$pg_ok" -ne 1 ]]; then
 fi
 
 echo ">>> docker compose ${COMPOSE_FILES[*]} build"
-docker compose "${COMPOSE_FILES[@]}" build
+docker compose "${ENV_FILES[@]}" "${COMPOSE_FILES[@]}" build
 
 echo ">>> docker compose ${COMPOSE_FILES[*]} up -d"
-docker compose "${COMPOSE_FILES[@]}" up -d
+docker compose "${ENV_FILES[@]}" "${COMPOSE_FILES[@]}" up -d
 
 WEB_PORT="4080"
 echo ""
