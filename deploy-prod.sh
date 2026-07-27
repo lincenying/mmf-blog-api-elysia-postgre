@@ -11,14 +11,14 @@ COMPOSE_FILES=(-f "$COMPOSE_FILE")
 ENV_FILES=(--env-file .env --env-file .env.production)
 
 echo ">>> 启动 PostgreSQL"
-docker compose "${ENV_FILES[@]}" "${COMPOSE_FILES[@]}" up -d api_postgres
+docker compose "${ENV_FILES[@]}" "${COMPOSE_FILES[@]}" up -d db_postgres
 
 PG_USER="postgres"
 PG_DB="mmfblog_v2"
 echo ">>> 等待 PostgreSQL 就绪 (${PG_USER} / ${PG_DB})"
 pg_ok=0
 for _ in $(seq 1 60); do
-  if docker compose "${ENV_FILES[@]}" "${COMPOSE_FILES[@]}" exec -T api_postgres pg_isready -U "$PG_USER" -d "$PG_DB" >/dev/null 2>&1; then
+  if docker compose "${ENV_FILES[@]}" "${COMPOSE_FILES[@]}" exec -T db_postgres pg_isready -U "$PG_USER" -d "$PG_DB" >/dev/null 2>&1; then
     pg_ok=1
     echo ">>> PostgreSQL 已就绪 (${PG_USER} / ${PG_DB})"
     break
@@ -26,7 +26,7 @@ for _ in $(seq 1 60); do
   sleep 2
 done
 if [[ "$pg_ok" -ne 1 ]]; then
-  echo "错误：PostgreSQL 未在约 2 分钟内就绪，请查看: docker compose ${COMPOSE_FILES[*]} logs api_postgres"
+  echo "错误：PostgreSQL 未在约 2 分钟内就绪，请查看: docker compose ${COMPOSE_FILES[*]} logs db_postgres"
   exit 1
 fi
 

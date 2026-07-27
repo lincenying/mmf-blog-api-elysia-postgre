@@ -1,8 +1,8 @@
 services:
 
   api_bun_postgre:
-    container_name: api-bun-server-postgre
-    image: lincenying/bun-api-server-postgre:${TAG}
+    container_name: api-bun-postgre
+    image: lincenying/api-bun-postgre:${TAG}
     build:
       context: .
       dockerfile: ./Dockerfile
@@ -16,7 +16,7 @@ services:
     ports:
       - 4080:4080
     depends_on:
-      api_postgres:
+      db_postgres:
         condition: service_healthy
     volumes:
       - ./uploads:/app/uploads
@@ -24,8 +24,8 @@ services:
     networks:
       - webnet
 
-  api_postgres:
-    container_name: api-postgres
+  db_postgres:
+    container_name: db-postgres
     image: postgres:18.4-alpine
     env_file:
       - .env
