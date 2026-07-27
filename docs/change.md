@@ -1,5 +1,20 @@
 # 变更记录
 
+## 2026-07-27 23:48:00
+
+- **修复**：`createPublicApiLayer` / `createCookieSessionApiLayer` 补充 `.as('scoped')`，将 `responseWrapper` 的 `onAfterHandle` / `onError` 逐级上浮到业务路由。
+- **现象**：`/api/frontend/trending` 等接口直接返回 Service 原始数据，未包裹 `code` / `message` / `data`。
+
+---
+
+**本次改动建议的 commit message（未自动提交）：**
+
+```
+fix: 修复 API 响应包装中间件因 scoped 嵌套过深未生效
+```
+
+---
+
 ## 2026-07-26 08:32:00
 
 - **部署**：`deploy-prod.sh` 为所有 `docker compose` 命令显式传入 `--env-file .env --env-file .env.production`，确保 `docker-compose.yml` 中 `${POSTGRES_DIR}`、`${POSTGRES_PASSWORD}` 等插值能读取到环境文件。
