@@ -6,7 +6,6 @@ export const categories = pgTable('categories', {
     cate_order: text('cate_order').notNull().default(''),
     cate_num: integer('cate_num').notNull().default(0),
     creat_date: text('creat_date').notNull().default(''),
-    update_date: text('update_date').notNull().default(''),
     is_delete: integer('is_delete').notNull().default(0),
     timestamp: integer('timestamp'),
 })

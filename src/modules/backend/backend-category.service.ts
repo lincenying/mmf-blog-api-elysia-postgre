@@ -65,7 +65,6 @@ export class BackendCategoryService {
                 cate_order,
                 cate_num: 0,
                 creat_date: getNowTime(),
-                update_date: getNowTime(),
                 is_delete: 0,
                 timestamp: Number(getNowTime('X')),
             }
@@ -126,7 +125,6 @@ export class BackendCategoryService {
                 .set({
                     cate_name,
                     cate_order,
-                    update_date: getNowTime(),
                 })
                 .where(eq(categories._id, _id))
                 .returning()

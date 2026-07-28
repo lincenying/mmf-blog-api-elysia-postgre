@@ -1,5 +1,19 @@
 # 变更记录
 
+## 2026-07-28 14:30:19
+
+- **修复**：删除 `categories` 表不存在的 `update_date` 字段（schema / 类型 / 服务层写入 / 迁移 SQL），与实际数据库结构对齐。
+
+---
+
+**本次改动建议的 commit message（未自动提交）：**
+
+```
+fix: 移除 categories 表中不存在的 update_date 字段
+```
+
+---
+
 ## 2026-07-27 23:48:00
 
 - **修复**：`createPublicApiLayer` / `createCookieSessionApiLayer` 补充 `.as('scoped')`，将 `responseWrapper` 的 `onAfterHandle` / `onError` 逐级上浮到业务路由。

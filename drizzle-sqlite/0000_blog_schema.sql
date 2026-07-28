@@ -38,7 +38,6 @@ CREATE TABLE `categories` (
 	`cate_order` text DEFAULT '' NOT NULL,
 	`cate_num` integer DEFAULT 0 NOT NULL,
 	`creat_date` text DEFAULT '' NOT NULL,
-	`update_date` text DEFAULT '' NOT NULL,
 	`is_delete` integer DEFAULT 0 NOT NULL,
 	`timestamp` integer
 );

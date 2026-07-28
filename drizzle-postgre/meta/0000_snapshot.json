@@ -266,13 +266,6 @@
           "notNull": true,
           "default": "''"
         },
-        "update_date": {
-          "name": "update_date",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "''"
-        },
         "is_delete": {
           "name": "is_delete",
           "type": "integer",
