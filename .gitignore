@@ -9,6 +9,8 @@ src/config/_secret.js
 src/config/_qiniu.js
 uploads/
 
+.data/*.db
+.data/*.sqlite3
 *-port.txt
 dist/
 /server-*
