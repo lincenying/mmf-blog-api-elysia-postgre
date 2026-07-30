@@ -8,6 +8,7 @@ import {
     apiPut,
     createTestApp,
     ensureTestDbMigrated,
+    findGenealogy,
     FIXTURES,
     resetAndSeed,
     type TestApp,
@@ -98,6 +99,14 @@ describe('API /api/genealogy', () => {
             expect(json.code).toBe(200)
             expect(json.data!.name).toBe('新人')
             expect(json.data!.id).toBeTruthy()
+
+            const row = await findGenealogy(json.data!.id)
+            expect(row).not.toBeNull()
+            expect(row!.name).toBe('新人')
+            expect(row!.parent).toBe(1)
+            expect(row!.sex).toBe('男')
+            expect(row!.desc).toBe('新增')
+            expect(row!.parent_name).toBe(FIXTURES.genealogy.rootName)
         })
 
         it('PUT /:id 无 Cookie → 403', async () => {
@@ -120,6 +129,12 @@ describe('API /api/genealogy', () => {
             })
             expect(json.code).toBe(200)
             expect(json.data!.name).toBe('子辈改名')
+
+            const row = await findGenealogy(2)
+            expect(row!.name).toBe('子辈改名')
+            expect(row!.desc).toBe('已更新')
+            expect(row!.parent).toBe(1)
+            expect(row!.parent_name).toBe(FIXTURES.genealogy.rootName)
         })
 
         it('DELETE /:id 无 Cookie → 403', async () => {
@@ -128,11 +143,17 @@ describe('API /api/genealogy', () => {
         })
 
         it('DELETE /:id 成功（叶子节点）', async () => {
+            expect(await findGenealogy(3)).not.toBeNull()
+
             const json = await apiDelete(app, '/api/genealogy/3', {
                 cookie: adminCookie(),
             })
             expect(json.code).toBe(200)
             expect(json.data).toBe('删除成功')
+
+            expect(await findGenealogy(3)).toBeNull()
+            expect(await findGenealogy(1)).not.toBeNull()
+            expect(await findGenealogy(2)).not.toBeNull()
         })
 
         it('DELETE /:id 存在子辈时失败', async () => {
@@ -140,6 +161,8 @@ describe('API /api/genealogy', () => {
                 cookie: adminCookie(),
             })
             expect(json.code).toBe(201)
+
+            expect(await findGenealogy(1)).not.toBeNull()
         })
     })
 })

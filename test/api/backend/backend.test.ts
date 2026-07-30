@@ -6,7 +6,12 @@ import {
     apiPost,
     createTestApp,
     ensureTestDbMigrated,
+    findAdmin,
+    findArticle,
+    findCategory,
+    findUser,
     FIXTURES,
+    hashPassword,
     resetAndSeed,
     type TestApp,
 } from '../../helpers'
@@ -98,7 +103,10 @@ describe('API /api/backend', () => {
         })
 
         it('POST /article/insert 成功', async () => {
-            const json = await apiPost<{ id: string }>(app, '/api/backend/article/insert', {
+            const cateBefore = await findCategory(FIXTURES.category.id)
+            expect(cateBefore!.cate_num).toBe(2)
+
+            const json = await apiPost<{ id: string, title: string }>(app, '/api/backend/article/insert', {
                 category: `${FIXTURES.category.id}|${FIXTURES.category.name}`,
                 content: '# New',
                 title: '新文章',
@@ -108,6 +116,20 @@ describe('API /api/backend', () => {
             })
             expect(json.code).toBe(200)
             expect(json.data!.id).toBeTruthy()
+
+            const row = await findArticle(json.data!.id)
+            expect(row).not.toBeNull()
+            expect(row!.title).toBe('新文章')
+            expect(row!.content).toBe('# New')
+            expect(row!.html).toBe('<h1>New</h1>')
+            expect(row!.category).toBe(FIXTURES.category.id)
+            expect(row!.category_name).toBe(FIXTURES.category.name)
+            expect(row!.is_delete).toBe(0)
+            expect(row!.like).toBe(0)
+            expect(row!.comment_count).toBe(0)
+
+            const cateAfter = await findCategory(FIXTURES.category.id)
+            expect(cateAfter!.cate_num).toBe(3)
         })
 
         it('POST /article/modify 成功', async () => {
@@ -124,14 +146,28 @@ describe('API /api/backend', () => {
             })
             expect(json.code).toBe(200)
             expect(json.data!.id).toBe(FIXTURES.article.id)
+
+            const row = await findArticle(FIXTURES.article.id)
+            expect(row!.title).toBe('更新标题')
+            expect(row!.content).toBe('# Updated')
+            expect(row!.html).toBe('<h1>Updated</h1>')
         })
 
         it('GET /article/delete 成功', async () => {
+            const cateBefore = await findCategory(FIXTURES.category.id)
+            expect(cateBefore!.cate_num).toBe(2)
+
             const json = await apiGet(app, '/api/backend/article/delete', {
                 cookie: adminCookie(),
                 query: { id: FIXTURES.articleOther.id },
             })
             expect(json.code).toBe(200)
+
+            const row = await findArticle(FIXTURES.articleOther.id)
+            expect(row!.is_delete).toBe(1)
+
+            const cateAfter = await findCategory(FIXTURES.category.id)
+            expect(cateAfter!.cate_num).toBe(1)
         })
 
         it('GET /article/recover 成功', async () => {
@@ -139,11 +175,16 @@ describe('API /api/backend', () => {
                 cookie: adminCookie(),
                 query: { id: FIXTURES.articleOther.id },
             })
+            expect((await findArticle(FIXTURES.articleOther.id))!.is_delete).toBe(1)
+
             const json = await apiGet(app, '/api/backend/article/recover', {
                 cookie: adminCookie(),
                 query: { id: FIXTURES.articleOther.id },
             })
             expect(json.code).toBe(200)
+
+            expect((await findArticle(FIXTURES.articleOther.id))!.is_delete).toBe(0)
+            expect((await findCategory(FIXTURES.category.id))!.cate_num).toBe(2)
         })
     })
 
@@ -165,6 +206,13 @@ describe('API /api/backend', () => {
             })
             expect(json.code).toBe(200)
             expect(json.data!.id).toBeTruthy()
+
+            const row = await findCategory(json.data!.id)
+            expect(row).not.toBeNull()
+            expect(row!.cate_name).toBe('新分类')
+            expect(row!.cate_order).toBe('9')
+            expect(row!.cate_num).toBe(0)
+            expect(row!.is_delete).toBe(0)
         })
 
         it('POST /category/modify 成功', async () => {
@@ -177,6 +225,10 @@ describe('API /api/backend', () => {
             })
             expect(json.code).toBe(200)
             expect(json.data!.id).toBe(FIXTURES.categoryOther.id)
+
+            const row = await findCategory(FIXTURES.categoryOther.id)
+            expect(row!.cate_name).toBe('改名分类')
+            expect(row!.cate_order).toBe('8')
         })
 
         it('GET /category/delete 成功', async () => {
@@ -185,6 +237,8 @@ describe('API /api/backend', () => {
                 query: { id: FIXTURES.categoryOther.id },
             })
             expect(json.code).toBe(200)
+
+            expect((await findCategory(FIXTURES.categoryOther.id))!.is_delete).toBe(1)
         })
 
         it('GET /category/recover 成功', async () => {
@@ -192,11 +246,15 @@ describe('API /api/backend', () => {
                 cookie: adminCookie(),
                 query: { id: FIXTURES.categoryOther.id },
             })
+            expect((await findCategory(FIXTURES.categoryOther.id))!.is_delete).toBe(1)
+
             const json = await apiGet(app, '/api/backend/category/recover', {
                 cookie: adminCookie(),
                 query: { id: FIXTURES.categoryOther.id },
             })
             expect(json.code).toBe(200)
+
+            expect((await findCategory(FIXTURES.categoryOther.id))!.is_delete).toBe(0)
         })
     })
 
@@ -235,6 +293,10 @@ describe('API /api/backend', () => {
             })
             expect(json.code).toBe(200)
             expect(json.data!.id).toBe(FIXTURES.adminOther.id)
+
+            const row = await findAdmin(FIXTURES.adminOther.id)
+            expect(row!.email).toBe('admin2-updated@test.com')
+            expect(row!.password).toBe(hashPassword('admin789'))
         })
 
         it('GET /admin/delete 成功', async () => {
@@ -243,6 +305,8 @@ describe('API /api/backend', () => {
                 query: { id: FIXTURES.adminOther.id },
             })
             expect(json.code).toBe(200)
+
+            expect((await findAdmin(FIXTURES.adminOther.id))!.is_delete).toBe(1)
         })
 
         it('GET /admin/recover 成功', async () => {
@@ -250,11 +314,15 @@ describe('API /api/backend', () => {
                 cookie: adminCookie(),
                 query: { id: FIXTURES.adminOther.id },
             })
+            expect((await findAdmin(FIXTURES.adminOther.id))!.is_delete).toBe(1)
+
             const json = await apiGet(app, '/api/backend/admin/recover', {
                 cookie: adminCookie(),
                 query: { id: FIXTURES.adminOther.id },
             })
             expect(json.code).toBe(200)
+
+            expect((await findAdmin(FIXTURES.adminOther.id))!.is_delete).toBe(0)
         })
     })
 
@@ -293,6 +361,10 @@ describe('API /api/backend', () => {
             })
             expect(json.code).toBe(200)
             expect(json.data!.id).toBe(FIXTURES.userOther.id)
+
+            const row = await findUser(FIXTURES.userOther.id)
+            expect(row!.email).toBe('user2-updated@test.com')
+            expect(row!.password).toBe(hashPassword('user9999'))
         })
 
         it('GET /user/delete 成功', async () => {
@@ -301,6 +373,8 @@ describe('API /api/backend', () => {
                 query: { id: FIXTURES.userOther.id },
             })
             expect(json.code).toBe(200)
+
+            expect((await findUser(FIXTURES.userOther.id))!.is_delete).toBe(1)
         })
 
         it('GET /user/recover 成功', async () => {
@@ -308,11 +382,15 @@ describe('API /api/backend', () => {
                 cookie: adminCookie(),
                 query: { id: FIXTURES.userOther.id },
             })
+            expect((await findUser(FIXTURES.userOther.id))!.is_delete).toBe(1)
+
             const json = await apiGet(app, '/api/backend/user/recover', {
                 cookie: adminCookie(),
                 query: { id: FIXTURES.userOther.id },
             })
             expect(json.code).toBe(200)
+
+            expect((await findUser(FIXTURES.userOther.id))!.is_delete).toBe(0)
         })
     })
 })
