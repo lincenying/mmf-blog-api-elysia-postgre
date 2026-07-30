@@ -10,9 +10,11 @@ CREATE TABLE `admins` (
 );
 --> statement-breakpoint
 CREATE TABLE `likes` (
+	`_id` text PRIMARY KEY NOT NULL,
 	`article_id` text NOT NULL,
 	`user_id` text NOT NULL,
-	PRIMARY KEY(`article_id`, `user_id`)
+	`creat_date` text DEFAULT '' NOT NULL,
+	`timestamp` integer
 );
 --> statement-breakpoint
 CREATE TABLE `articles` (

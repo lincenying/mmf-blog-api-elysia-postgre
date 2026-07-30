@@ -16,6 +16,8 @@
     "db:sqlite:generate": "bun drizzle-kit generate --config=./drizzle-sqlite.config.ts",
     "db:sqlite:migrate": "bun run src/db/utils/migrate-sqlite.ts",
     "db:postgre:migrate-genealogy": "bun run src/db/utils/migrate-genealogy-to-pg.ts",
+    "test": "bun test --max-concurrency 1",
+    "test:watch": "bun test --watch --max-concurrency 1",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "lint:ts": "tsc --noEmit",

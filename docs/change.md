@@ -1,5 +1,21 @@
 # 变更记录
 
+## 2026-07-30 16:52:18
+
+- **测试**：新增全量 REST API 接口集成测试（`bun:test` + `app.handle` + 独立 SQLite）。
+- **覆盖**：`/api/frontend`、`/api/backend`、`/api/genealogy`（含鉴权 403 / 登录失败）；排除上传、WebSocket、代理、HTML/JWT 演示路由。
+- **基建**：`bunfig.toml` preload、`test/helpers`（app/request/auth/seed）、`package.json` 的 `test` / `test:watch`（串行 `--max-concurrency 1`）。
+
+---
+
+**本次改动建议的 commit message（未自动提交）：**
+
+```
+test: 新增前台/后台 API 接口集成测试
+```
+
+---
+
 ## 2026-07-30 14:39:25
 
 - **功能**：合并 genealogy 族谱模块到本项目。
