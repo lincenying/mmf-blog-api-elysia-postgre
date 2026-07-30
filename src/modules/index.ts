@@ -4,6 +4,7 @@
 export { adminRouter } from './admin/admin.controller'
 export { backendRouter } from './backend/backend.controller'
 export { frontendRouter } from './frontend/frontend.controller'
+export { genealogyPageRouter, genealogyRouter } from './genealogy/genealogy.controller'
 export { jwtRouter } from './jwt/jwt.controller'
 export { proxyRouter } from './proxy/proxy.controller'
 export { uploadRouter } from './upload/upload.controller'

@@ -6,6 +6,8 @@ import {
     adminRouter,
     backendRouter,
     frontendRouter,
+    genealogyPageRouter,
+    genealogyRouter,
     jwtRouter,
     proxyRouter,
     uploadRouter,
@@ -31,6 +33,8 @@ export function createApp() {
         .use(wsRouter)
         .use(frontendRouter)
         .use(backendRouter)
+        .use(genealogyRouter)
+        .use(genealogyPageRouter)
         .use(uploadRouter)
         .use(adminRouter)
         .use(jwtRouter)

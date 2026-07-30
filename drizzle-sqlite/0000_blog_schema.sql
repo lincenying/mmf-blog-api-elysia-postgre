@@ -9,7 +9,7 @@ CREATE TABLE `admins` (
 	`timestamp` integer
 );
 --> statement-breakpoint
-CREATE TABLE `article_likes` (
+CREATE TABLE `likes` (
 	`article_id` text NOT NULL,
 	`user_id` text NOT NULL,
 	PRIMARY KEY(`article_id`, `user_id`)

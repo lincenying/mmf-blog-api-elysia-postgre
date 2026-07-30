@@ -22,6 +22,7 @@ export const articleLikes = schema.articleLikes as typeof postgreSchema.articleL
 export const articles = schema.articles as typeof postgreSchema.articles
 export const categories = schema.categories as typeof postgreSchema.categories
 export const comments = schema.comments as typeof postgreSchema.comments
+export const genealogy = schema.genealogy as typeof postgreSchema.genealogy
 export const users = schema.users as typeof postgreSchema.users
 
 /** @deprecated 请使用统一的 `db` */

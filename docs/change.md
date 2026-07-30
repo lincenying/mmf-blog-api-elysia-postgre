@@ -1,5 +1,23 @@
 # 变更记录
 
+## 2026-07-30 14:39:25
+
+- **功能**：合并 genealogy 族谱模块到本项目。
+- **数据库**：新增 sqlite/postgre 双份 `genealogy` 表 schema 与迁移；SQLite 沿用已有 1814 条数据；PostgreSQL 建空表，并提供 `db:postgre:migrate-genealogy` 迁数脚本。
+- **API**：`/api/genealogy` 列表公开；login/logout 复用 `admins`；增删改需管理员 Cookie 鉴权。
+- **页面**：公开路由 `GET /genealogy`（Twig + D3），管理前弹出登录框。
+- **修复**：`createAdminAuthGuard` / `createUserAuthGuard` 补充 `.as('scoped')`，使守卫对后续业务路由生效。
+
+---
+
+**本次改动建议的 commit message（未自动提交）：**
+
+```
+feat: 合并族谱模块（公开浏览、管理员增删改）
+```
+
+---
+
 ## 2026-07-28 14:30:19
 
 - **修复**：删除 `categories` 表不存在的 `update_date` 字段（schema / 类型 / 服务层写入 / 迁移 SQL），与实际数据库结构对齐。

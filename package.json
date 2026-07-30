@@ -15,6 +15,7 @@
     "db:postgre:migrate": "bun run src/db/utils/migrate.ts",
     "db:sqlite:generate": "bun drizzle-kit generate --config=./drizzle-sqlite.config.ts",
     "db:sqlite:migrate": "bun run src/db/utils/migrate-sqlite.ts",
+    "db:postgre:migrate-genealogy": "bun run src/db/utils/migrate-genealogy-to-pg.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "lint:ts": "tsc --noEmit",

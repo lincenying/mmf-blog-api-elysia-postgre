@@ -139,6 +139,27 @@ export const userModifySchema = t.Object({
 export type UserModify = typeof userModifySchema.static
 export type UserModifyForm = Optional<Omit<UserModify, 'id'>, 'password'>
 
+export const genealogyInsertSchema = t.Object({
+    name: tt.String('姓名'),
+    parent: t.Numeric(),
+    sex: t.Optional(t.Union([t.String(), t.Null()])),
+    desc: t.Optional(t.Union([t.String(), t.Null()])),
+})
+export type GenealogyInsert = typeof genealogyInsertSchema.static
+
+export const genealogyModifySchema = t.Object({
+    name: tt.String('姓名'),
+    parent: t.Numeric(),
+    sex: t.Optional(t.Union([t.String(), t.Null()])),
+    desc: t.Optional(t.Union([t.String(), t.Null()])),
+})
+export type GenealogyModify = typeof genealogyModifySchema.static
+
+export const genealogyIdSchema = t.Object({
+    id: t.Numeric(),
+})
+export type GenealogyId = typeof genealogyIdSchema.static
+
 export const validationSchema = new Elysia()
     .model({
         // 登录cookies
@@ -174,4 +195,9 @@ export const validationSchema = new Elysia()
         'user.password': userPasswordSchema,
         // 修改用户信息
         'user.modify': userModifySchema,
+
+        // 族谱
+        'genealogy.insert': genealogyInsertSchema,
+        'genealogy.modify': genealogyModifySchema,
+        'genealogy.id': genealogyIdSchema,
     })
