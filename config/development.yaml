@@ -86,7 +86,7 @@ jwt:
 # 可用环境变量 DB_PROVIDER SQLITE_DB_URL POSTGRES_HOST POSTGRES_PORT POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DB 覆盖
 # =========================================
 db:
-  provider: postgresql
+  provider: sqlite
   sqlite: ./.data/db.sqlite3
   postgre_host: localhost
   postgre_port: 5432
