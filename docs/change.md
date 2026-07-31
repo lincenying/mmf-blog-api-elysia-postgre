@@ -1,5 +1,20 @@
 # 变更记录
 
+## 2026-07-31 15:28:42
+
+- **部署**：`deploy-prod.sh` 新增 `--api` / `--api-only` / `-a` 参数，可仅构建 `api_bun_postgre`，跳过 PostgreSQL 启动与完整 up。
+- **帮助**：支持 `-h` / `--help` 查看用法。
+
+---
+
+**本次改动建议的 commit message（未自动提交）：**
+
+```
+feat: deploy-prod 支持仅构建 api_bun_postgre
+```
+
+---
+
 ## 2026-07-31 11:51:24
 
 - **样式**：美化 `/backend` 添加管理员页（`views/index.twig` + `public/css/index.css`）。

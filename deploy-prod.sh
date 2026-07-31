@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 # 一键构建并启动生产栈：先起 PostgreSQL，再显式跑迁移（幂等），最后启动 API/Web（API 入口仍会再跑一次迁移，同为幂等）
+# 用法:
+#   ./deploy-prod.sh              # 完整部署
+#   ./deploy-prod.sh --api        # 仅构建 api_bun_postgre
+#   ./deploy-prod.sh --api-only   # 同上
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -9,6 +13,35 @@ COMPOSE_FILE="docker-compose.yml"
 COMPOSE_FILES=(-f "$COMPOSE_FILE")
 # Compose 插值（如 ${POSTGRES_DIR}）默认只读项目根 .env；显式加载 .env / .env.production 避免遗漏
 ENV_FILES=(--env-file .env --env-file .env.production)
+
+API_ONLY=0
+for arg in "$@"; do
+  case "$arg" in
+    --api|--api-only|-a)
+      API_ONLY=1
+      ;;
+    -h|--help)
+      echo "用法: $0 [--api|--api-only|-a]"
+      echo "  （无参数）     启动 PostgreSQL、构建全部并 up -d"
+      echo "  --api / -a     仅构建 docker-compose 中的 api_bun_postgre"
+      exit 0
+      ;;
+    *)
+      echo "未知参数: $arg（可用 --help 查看用法）" >&2
+      exit 1
+      ;;
+  esac
+done
+
+if [[ "$API_ONLY" -eq 1 ]]; then
+  echo ">>> 仅构建 api_bun_postgre"
+  docker compose "${ENV_FILES[@]}" "${COMPOSE_FILES[@]}" build api_bun_postgre
+  echo ""
+  echo "已构建镜像: api_bun_postgre"
+  echo "启动该服务: docker compose ${COMPOSE_FILES[*]} up -d api_bun_postgre"
+  echo ""
+  exit 0
+fi
 
 echo ">>> 启动 PostgreSQL"
 docker compose "${ENV_FILES[@]}" "${COMPOSE_FILES[@]}" up -d db_postgres
