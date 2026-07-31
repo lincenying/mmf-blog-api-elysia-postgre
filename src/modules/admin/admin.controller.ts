@@ -6,13 +6,13 @@ import { validationSchema } from '~/schema/elysia-schema'
 import { AdminTemplateService } from './admin.service'
 
 /** 后台 Twig 模板页插件。 */
-export const adminRouter = new Elysia({ prefix: '/backend' })
+export const adminRouter = new Elysia()
     .use(validationSchema)
     .use(html())
-    .get('/', async () => {
+    .get('/backend', async () => {
         return await AdminTemplateService.getAdminTemplate()
     })
-    .post('/', async ({ body }) => {
+    .post('/backend', async ({ body }) => {
         return await AdminTemplateService.postAdminTemplate(body)
     }, {
         body: 'user.insert',

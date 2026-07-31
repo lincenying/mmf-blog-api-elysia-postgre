@@ -1,5 +1,21 @@
 # 变更记录
 
+## 2026-07-31 11:51:24
+
+- **样式**：美化 `/backend` 添加管理员页（`views/index.twig` + `public/css/index.css`）。
+- **设计**：Space Grotesk / DM Sans、冷灰蓝氛围背景、品牌英雄区、极简表单与单一 CTA。
+- **体验**：语义化 label、邮箱/密码类型、成功/失败反馈、焦点环、`prefers-reduced-motion`、移动端适配。
+
+---
+
+**本次改动建议的 commit message（未自动提交）：**
+
+```
+style: 美化添加管理员页视觉与表单体验
+```
+
+---
+
 ## 2026-07-30 17:07:42
 
 - **测试**：写操作用例补充数据库落库断言（`test/helpers/db.ts` 查询辅助）。

@@ -1,16 +1,89 @@
 {% extends 'layout.twig' %}
 
+{% block styles %}
+    <link rel="stylesheet" href="/public/css/index.css">
+{% endblock %}
+
 {% block content %}
-<div class="form-box">
-    <form method="post" action="/backend">
+<div class="admin-page">
+    <header class="admin-brand">
+        <p class="admin-brand__name">M·M·F 小屋</p>
+        <p class="admin-brand__tagline">后台管理入口</p>
+    </header>
+
+    <form class="admin-form" method="post" action="/backend" autocomplete="on">
+        <h1 class="admin-form__title">添加管理员</h1>
+        <p class="admin-form__desc">填写账号信息以创建新的后台管理员。</p>
+
         {% if message %}
-            <p>{{ message }}</p>
+            {% set isSuccess = '成功' in message %}
+            <div
+                class="admin-alert {% if isSuccess %}admin-alert--success{% else %}admin-alert--error{% endif %}"
+                role="alert"
+                aria-live="polite"
+            >
+                {% if isSuccess %}
+                    <svg class="admin-alert__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.75"/>
+                        <path d="M8 12.5l2.5 2.5L16 9.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                {% else %}
+                    <svg class="admin-alert__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.75"/>
+                        <path d="M12 8v5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+                        <circle cx="12" cy="16" r="1" fill="currentColor"/>
+                    </svg>
+                {% endif %}
+                <span>{{ message }}</span>
+            </div>
         {% endif %}
-        <h1>添加管理员</h1>
-        <p><span>用户名: </span><input name="username" type="text" /></p>
-        <p><span>邮箱: </span><input name="email" type="text" /></p>
-        <p><span>密码: </span><input name="password" type="text" /></p>
-        <p><span></span><input class="form-btn" name="submit" type="submit" value="添加" /></p>
+
+        <div class="admin-field">
+            <label for="username">用户名</label>
+            <input
+                id="username"
+                name="username"
+                type="text"
+                autocomplete="username"
+                required
+                placeholder="请输入用户名"
+            />
+        </div>
+
+        <div class="admin-field">
+            <label for="email">邮箱</label>
+            <input
+                id="email"
+                name="email"
+                type="email"
+                autocomplete="email"
+                required
+                placeholder="name@example.com"
+            />
+        </div>
+
+        <div class="admin-field">
+            <label for="password">密码</label>
+            <input
+                id="password"
+                name="password"
+                type="password"
+                autocomplete="new-password"
+                required
+                placeholder="请输入密码"
+            />
+        </div>
+
+        <div class="admin-actions">
+            <button class="admin-submit" name="submit" type="submit" value="添加">
+                添加管理员
+            </button>
+        </div>
     </form>
+
+    <nav class="admin-nav" aria-label="相关页面">
+        <a href="/chat">聊天室</a>
+        <a href="/genealogy">族谱</a>
+    </nav>
 </div>
 {% endblock %}

@@ -1,11 +1,4 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
 body {
-    font-family: 'Segoe UI', 'Roboto', 'Inter', system-ui, -apple-system, sans-serif;
     background: linear-gradient(145deg, #e0eaf4 0%, #cfdef3 100%);
     height: 100vh;
     display: flex;
