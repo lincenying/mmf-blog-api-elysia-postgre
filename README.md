@@ -64,7 +64,7 @@ cp .env.production.example .env.production
 | 变量 | 说明 | 默认 |
 | --- | --- | --- |
 | `NODE_ENV` | `development` / `production` | `development` |
-| `PORT` | 监听端口 | 开发 `4000`，生产配置 `4080` |
+| `PORT` | 监听端口 | 开发 `4000`，生产配置 `4000` |
 | `DB_PROVIDER` | `sqlite` / `postgresql`（可选） | 开发 `sqlite`，生产 `postgresql` |
 | `SQLITE_DB_URL` | SQLite 文件路径 | `./.data/db.sqlite3` |
 | `POSTGRES_*` | PostgreSQL 连接参数 | 见 example 文件 |
@@ -184,14 +184,14 @@ interface IApiResponse<T = unknown> {
 ```bash
 docker build -t lincenying/api-bun-postgre:latest -f ./Dockerfile .
 docker run -d \
-  -p 4080:4080 \
+  -p 4000:4000 \
   --env-file .env \
   --env-file .env.production \
   --name container-api-bun-postgre \
   lincenying/api-bun-postgre:latest
 ```
 
-镜像内默认 `NODE_ENV=production`，监听 **4080**（见 `config/production.yaml`）。生产环境需配置 PostgreSQL 连接参数。
+镜像内默认 `NODE_ENV=production`，监听 **4000**（见 `config/production.yaml`）。生产环境需配置 PostgreSQL 连接参数。
 
 ### docker-compose（API + PostgreSQL）
 
@@ -203,7 +203,7 @@ docker run -d \
 chmod +x ./deploy-prod.sh && ./deploy-prod.sh
 ```
 
-访问：`http://localhost:4080`
+访问：`http://localhost:4000`
 
 常用命令：
 

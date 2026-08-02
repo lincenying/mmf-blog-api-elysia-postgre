@@ -55,6 +55,6 @@ ENV NODE_ENV=production
 COPY ./entrypoint-api.sh ./entrypoint-api.sh
 RUN chmod +x ./entrypoint-api.sh ./server ./migrate
 
-EXPOSE 4080
+EXPOSE 4000
 
 CMD ["./entrypoint-api.sh"]
