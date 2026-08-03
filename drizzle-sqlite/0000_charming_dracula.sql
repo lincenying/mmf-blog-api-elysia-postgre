@@ -9,6 +9,15 @@ CREATE TABLE `admins` (
 	`timestamp` integer
 );
 --> statement-breakpoint
+CREATE TABLE `archive` (
+	`c_id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`c_title` text,
+	`c_intro` text,
+	`c_content` text,
+	`c_view` integer,
+	`c_posttime` text
+);
+--> statement-breakpoint
 CREATE TABLE `likes` (
 	`_id` text PRIMARY KEY NOT NULL,
 	`article_id` text NOT NULL,
@@ -17,6 +26,7 @@ CREATE TABLE `likes` (
 	`timestamp` integer
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `likes_article_id_user_id_unique` ON `likes` (`article_id`,`user_id`);--> statement-breakpoint
 CREATE TABLE `articles` (
 	`_id` text PRIMARY KEY NOT NULL,
 	`title` text NOT NULL,
@@ -52,6 +62,15 @@ CREATE TABLE `comments` (
 	`creat_date` text DEFAULT '' NOT NULL,
 	`is_delete` integer DEFAULT 0 NOT NULL,
 	`timestamp` integer
+);
+--> statement-breakpoint
+CREATE TABLE `genealogy` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`name` text NOT NULL,
+	`parent` integer NOT NULL,
+	`sex` text,
+	`desc` text,
+	`parent_name` text
 );
 --> statement-breakpoint
 CREATE TABLE `users` (

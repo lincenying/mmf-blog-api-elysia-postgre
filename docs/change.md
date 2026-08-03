@@ -1,5 +1,36 @@
 # 变更记录
 
+## 2026-08-03 17:31:36
+
+- **数据库**：同步精简后的 `archive` 表结构，仅保留 `c_id/c_title/c_intro/c_content/c_view/c_posttime`。
+- **代码**：更新 Drizzle schema、Elysia 校验、Service 增删改查，移除无效字段；新增迁移 `0003_archive_slim`。
+
+---
+
+**本次改动建议的 commit message（未自动提交）：**
+
+```
+refactor: 同步精简 archive 表字段
+```
+
+---
+
+## 2026-08-03 17:20:44
+
+- **数据库**：新增 `archive` 表 Drizzle schema（SQLite / PostgreSQL）及迁移 `0002_archive`。
+- **接口**：`/api/archive` 增删改查（列表分页/详情公开，写入需管理员鉴权）。
+- **校验**：补充 `archive.page` / `archive.insert` / `archive.modify` / `archive.id` Elysia Schema。
+
+---
+
+**本次改动建议的 commit message（未自动提交）：**
+
+```
+feat: 新增 archive 归档内容增删改查接口
+```
+
+---
+
 ## 2026-07-31 15:28:42
 
 - **部署**：`deploy-prod.sh` 新增 `--api` / `--api-only` / `-a` 参数，可仅构建 `api_bun_postgre`，跳过 PostgreSQL 启动与完整 up。

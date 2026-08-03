@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1782488806524,
-      "tag": "0000_low_zemo",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1785390000000,
-      "tag": "0001_genealogy",
+      "when": 1785749722274,
+      "tag": "0000_tough_violations",
       "breakpoints": true
     }
   ]

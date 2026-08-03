@@ -4,6 +4,7 @@ import { Elysia, file } from 'elysia'
 
 import {
     adminRouter,
+    archiveRouter,
     backendRouter,
     frontendRouter,
     genealogyPageRouter,
@@ -33,6 +34,7 @@ export function createApp() {
         .use(wsRouter)
         .use(frontendRouter)
         .use(backendRouter)
+        .use(archiveRouter)
         .use(genealogyRouter)
         .use(genealogyPageRouter)
         .use(uploadRouter)

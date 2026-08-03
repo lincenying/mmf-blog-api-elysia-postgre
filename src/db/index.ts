@@ -18,6 +18,7 @@ export const db = (dbProvider === 'postgresql' ? postgreDb : sqliteDb) as typeof
 const schema = dbProvider === 'postgresql' ? postgreSchema : sqliteSchema
 
 export const admins = schema.admins as typeof postgreSchema.admins
+export const archive = schema.archive as typeof postgreSchema.archive
 export const articleLikes = schema.articleLikes as typeof postgreSchema.articleLikes
 export const articles = schema.articles as typeof postgreSchema.articles
 export const categories = schema.categories as typeof postgreSchema.categories

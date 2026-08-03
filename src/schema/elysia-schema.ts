@@ -160,6 +160,37 @@ export const genealogyIdSchema = t.Object({
 })
 export type GenealogyId = typeof genealogyIdSchema.static
 
+export const archivePageSchema = t.Partial(
+    t.Object({
+        page: t.Numeric(),
+        limit: t.Numeric(),
+        key: t.String(),
+        sort: t.String(),
+    }),
+)
+export type ArchivePage = typeof archivePageSchema.static
+
+export const archiveInsertSchema = t.Object({
+    c_title: tt.String('标题'),
+    c_intro: t.Optional(t.Union([t.String(), t.Null()])),
+    c_content: t.Optional(t.Union([t.String(), t.Null()])),
+    c_view: t.Optional(t.Union([t.Numeric(), t.Null()])),
+})
+export type ArchiveInsert = typeof archiveInsertSchema.static
+
+export const archiveModifySchema = t.Object({
+    c_title: tt.String('标题'),
+    c_intro: t.Optional(t.Union([t.String(), t.Null()])),
+    c_content: t.Optional(t.Union([t.String(), t.Null()])),
+    c_view: t.Optional(t.Union([t.Numeric(), t.Null()])),
+})
+export type ArchiveModify = typeof archiveModifySchema.static
+
+export const archiveIdSchema = t.Object({
+    id: t.Numeric(),
+})
+export type ArchiveId = typeof archiveIdSchema.static
+
 export const validationSchema = new Elysia()
     .model({
         // 登录cookies
@@ -200,4 +231,10 @@ export const validationSchema = new Elysia()
         'genealogy.insert': genealogyInsertSchema,
         'genealogy.modify': genealogyModifySchema,
         'genealogy.id': genealogyIdSchema,
+
+        // 归档
+        'archive.page': archivePageSchema,
+        'archive.insert': archiveInsertSchema,
+        'archive.modify': archiveModifySchema,
+        'archive.id': archiveIdSchema,
     })

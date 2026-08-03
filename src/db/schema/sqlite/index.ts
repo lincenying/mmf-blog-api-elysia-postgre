@@ -2,6 +2,7 @@
  * BunSQLite Drizzle 表定义聚合入口。
  */
 export * from './admins'
+export * from './archive'
 export * from './article-likes'
 export * from './articles'
 export * from './categories'

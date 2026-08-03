@@ -1,5 +1,5 @@
 {
-  "id": "48bba87b-0c74-4cc4-840e-0c9385c5b43b",
+  "id": "f884a37c-3858-43cb-8186-c08de5153ce4",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -56,6 +56,66 @@
         "timestamp": {
           "name": "timestamp",
           "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.archive": {
+      "name": "archive",
+      "schema": "",
+      "columns": {
+        "c_id": {
+          "name": "c_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "archive_c_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "c_title": {
+          "name": "c_title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "c_intro": {
+          "name": "c_intro",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "c_content": {
+          "name": "c_content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "c_view": {
+          "name": "c_view",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "c_posttime": {
+          "name": "c_posttime",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         }
@@ -333,6 +393,66 @@
         "timestamp": {
           "name": "timestamp",
           "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.genealogy": {
+      "name": "genealogy",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "genealogy_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "parent": {
+          "name": "parent",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sex": {
+          "name": "sex",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "desc": {
+          "name": "desc",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "parent_name": {
+          "name": "parent_name",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         }
