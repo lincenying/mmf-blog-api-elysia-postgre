@@ -1,5 +1,38 @@
 # 变更记录
 
+## 2026-08-03 17:46:36
+
+- **迁移**：恢复 `has-postgres-schema-tables.ts`；`db:postgre:migrate` 在核心表已存在时跳过基线迁移，避免 `CREATE TABLE` 冲突。
+- **说明**：不再手写补建 `genealogy`（已纳入基线 `0000`）。
+
+---
+
+**本次改动建议的 commit message（未自动提交）：**
+
+```
+fix: 恢复 PostgreSQL 已有表时跳过基线迁移
+```
+
+---
+
+## 2026-08-03 17:42:33
+
+- **迁移脚本**：配合重新生成的基线 `0000` 迁移，精简 `db:sqlite:migrate` / `db:postgre:migrate` / `db:postgre:migrate-genealogy`。
+- **清理**：移除已有表跳过逻辑与手写 `CREATE TABLE genealogy`；删除 `has-postgres-schema-tables.ts`。
+- **族谱迁数**：`migrate-genealogy-to-pg` 改为 Drizzle upsert，需先执行结构迁移。
+- **脚本顺序**：`package.json` 中 sqlite 脚本置于 postgre 之前。
+
+---
+
+**本次改动建议的 commit message（未自动提交）：**
+
+```
+refactor: 精简数据库迁移脚本适配基线 0000
+```
+
+---
+
+
 ## 2026-08-03 17:31:36
 
 - **数据库**：同步精简后的 `archive` 表结构，仅保留 `c_id/c_title/c_intro/c_content/c_view/c_posttime`。
