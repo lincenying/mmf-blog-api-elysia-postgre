@@ -14,7 +14,7 @@ services:
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     ports:
-      - 4080:4080
+      - 4000:4000
     depends_on:
       db_postgres:
         condition: service_healthy

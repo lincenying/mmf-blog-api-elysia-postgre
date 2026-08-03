@@ -375,7 +375,7 @@ refactor: 合并 modules 中 model 与 service 层
 
 ## 2026-05-21 10:03:53
 
-- **文档**：重写 `README.md`，对齐当前技术栈（Bun + Elysia + MongoDB/PostgreSQL/SQLite）、快速开始、`init:config`、路由前缀、环境变量、Docker/docker-compose 与 Mongoose 版本说明；修正 `admin.lock` 文件名与端口说明（开发 4000 / 生产 4080）。
+- **文档**：重写 `README.md`，对齐当前技术栈（Bun + Elysia + MongoDB/PostgreSQL/SQLite）、快速开始、`init:config`、路由前缀、环境变量、Docker/docker-compose 与 Mongoose 版本说明；修正 `admin.lock` 文件名与端口说明（开发 4000 / 生产 4000）。
 
 ---
 

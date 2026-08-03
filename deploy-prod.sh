@@ -69,7 +69,7 @@ docker compose "${ENV_FILES[@]}" "${COMPOSE_FILES[@]}" build
 echo ">>> docker compose ${COMPOSE_FILES[*]} up -d"
 docker compose "${ENV_FILES[@]}" "${COMPOSE_FILES[@]}" up -d
 
-WEB_PORT="4080"
+WEB_PORT="4000"
 echo ""
 echo "已启动。前端: http://localhost:${WEB_PORT}"
 echo "查看日志: docker compose ${COMPOSE_FILES[*]} logs -f api_bun_postgre"
