@@ -18,30 +18,6 @@ const archiveListColumns = {
 }
 
 /**
- * 将可选数值字段规范为整数或 null。
- */
-function normalizeOptionalInt(value: number | null | undefined, fallback: number | null = null): number | null {
-    if (value === undefined || value === null) {
-        return fallback
-    }
-    if (!Number.isFinite(value)) {
-        return fallback
-    }
-    return Math.trunc(value)
-}
-
-/**
- * 将可选字符串字段 trim；空串按 null 处理。
- */
-function normalizeOptionalText(value: string | null | undefined, fallback: string | null = null): string | null {
-    if (value === undefined || value === null) {
-        return fallback
-    }
-    const trimmed = value.trim()
-    return trimmed === '' ? fallback : trimmed
-}
-
-/**
  * 归档内容业务（列表/详情公开；增删改由 Controller 层管理员守卫保护）。
  */
 export class ArchiveService {
@@ -120,9 +96,9 @@ export class ArchiveService {
         try {
             const [result] = await db.insert(archive).values({
                 c_title,
-                c_intro: normalizeOptionalText(body.c_intro),
-                c_content: normalizeOptionalText(body.c_content, ''),
-                c_view: normalizeOptionalInt(body.c_view, 0),
+                c_intro: body.c_intro ?? '',
+                c_content: body.c_content ?? '',
+                c_view: body.c_view ?? 0,
                 c_posttime: getNowTime(),
             }).returning()
             return result
@@ -156,9 +132,9 @@ export class ArchiveService {
 
             const [result] = await db.update(archive).set({
                 c_title,
-                c_intro: normalizeOptionalText(body.c_intro),
-                c_content: normalizeOptionalText(body.c_content, ''),
-                c_view: normalizeOptionalInt(body.c_view, 0),
+                c_intro: body.c_intro ?? '',
+                c_content: body.c_content ?? '',
+                c_view: body.c_view ?? 0,
             }).where(eq(archive.c_id, id)).returning()
             return result
         }
