@@ -1,5 +1,64 @@
 # 变更记录
 
+## 2026-08-05 23:10:15
+
+- **修复**：`migrate-sqlite.ts` 将已弃用的 `Database.exec` 替换为 `Database.run`。
+
+---
+
+**本次改动建议的 commit message（未自动提交）：**
+
+```
+fix: 用 Database.run 替换已弃用的 exec
+```
+
+---
+
+## 2026-08-05 23:08:30
+
+- **修复**：`users.username` / `admins.username` 改为普通索引（非 UNIQUE），避免历史重复用户名导致建索引失败；唯一性仍由业务层校验。
+
+---
+
+**本次改动建议的 commit message（未自动提交）：**
+
+```
+fix: username 索引改为非唯一以兼容历史重复数据
+```
+
+---
+
+## 2026-08-05 23:05:20
+
+- **修复**：`db:sqlite:migrate` 在核心表已存在时跳过基线 `0000`，避免 `table already exists`；仍幂等执行 `0001_add_indexes`。
+- **导出**：`bun-sqlite.ts` 导出底层 `sqlite` 客户端供迁移脚本检测表与建索引。
+
+---
+
+**本次改动建议的 commit message（未自动提交）：**
+
+```
+fix: SQLite 已有表时跳过基线迁移并补齐索引
+```
+
+---
+
+## 2026-08-05 22:50:12
+
+- **索引**：按业务查询路径为 articles / comments / likes / users / admins / categories / genealogy 补充复合索引与唯一索引（PostgreSQL + SQLite schema 同步）。
+- **迁移**：新增 `0001_add_indexes`；已有 PostgreSQL 库跳过基线时仍幂等执行索引 SQL。
+- **说明**：`users.username` / `admins.username` 使用唯一索引，若历史数据存在重复用户名需先清洗。
+
+---
+
+**本次改动建议的 commit message（未自动提交）：**
+
+```
+perf: 为常用查询字段建立数据库索引
+```
+
+---
+
 ## 2026-08-03 17:46:36
 
 - **迁移**：恢复 `has-postgres-schema-tables.ts`；`db:postgre:migrate` 在核心表已存在时跳过基线迁移，避免 `CREATE TABLE` 冲突。

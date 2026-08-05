@@ -1,4 +1,4 @@
-import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
+import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 
 export const users = sqliteTable('users', {
     _id: text('_id').primaryKey(),
@@ -11,7 +11,11 @@ export const users = sqliteTable('users', {
     timestamp: integer('timestamp'),
     wx_avatar: text('wx_avatar'),
     wx_signature: text('wx_signature'),
-})
+}, table => [
+    /** 登录 / 注册查重（历史库可能有重复用户名，唯一性由业务层保证） */
+    index('idx_users_username').on(table.username),
+    index('idx_users_email').on(table.email),
+])
 
 export type UserRow = typeof users.$inferSelect
 export type NewUserRow = typeof users.$inferInsert

@@ -7,5 +7,5 @@ import * as schema from '~/db/schema/sqlite'
 
 mkdirSync(dirname(config.db.sqlite), { recursive: true })
 
-const sqlite = new Database(config.db.sqlite)
+export const sqlite = new Database(config.db.sqlite)
 export const db = drizzle({ client: sqlite, schema })

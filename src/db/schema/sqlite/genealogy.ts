@@ -1,4 +1,4 @@
-import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
+import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 
 /**
  * 族谱成员表（SQLite）。
@@ -10,7 +10,10 @@ export const genealogy = sqliteTable('genealogy', {
     sex: text('sex'),
     desc: text('desc'),
     parent_name: text('parent_name'),
-})
+}, table => [
+    /** 查子节点 / 删除前校验是否有子节点 */
+    index('idx_genealogy_parent').on(table.parent),
+])
 
 export type GenealogyRow = typeof genealogy.$inferSelect
 export type NewGenealogyRow = typeof genealogy.$inferInsert

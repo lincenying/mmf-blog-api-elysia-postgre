@@ -1,4 +1,4 @@
-import { integer, pgTable, text, unique } from 'drizzle-orm/pg-core'
+import { index, integer, pgTable, text, unique } from 'drizzle-orm/pg-core'
 
 export const articleLikes = pgTable('likes', {
     _id: text('_id').primaryKey(),
@@ -8,6 +8,8 @@ export const articleLikes = pgTable('likes', {
     timestamp: integer('timestamp'),
 }, table => [
     unique().on(table.article_id, table.user_id),
+    /** 查询用户已点赞文章列表（unique 左前缀为 article_id，需单独索引 user_id） */
+    index('idx_likes_user_id').on(table.user_id),
 ])
 
 export type ArticleLikeRow = typeof articleLikes.$inferSelect

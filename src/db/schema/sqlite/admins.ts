@@ -1,4 +1,4 @@
-import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
+import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 
 export const admins = sqliteTable('admins', {
     _id: text('_id').primaryKey(),
@@ -9,7 +9,10 @@ export const admins = sqliteTable('admins', {
     update_date: text('update_date').notNull().default(''),
     is_delete: integer('is_delete').notNull().default(0),
     timestamp: integer('timestamp'),
-})
+}, table => [
+    /** 管理员登录查重（唯一性由业务层保证） */
+    index('idx_admins_username').on(table.username),
+])
 
 export type AdminRow = typeof admins.$inferSelect
 export type NewAdminRow = typeof admins.$inferInsert
