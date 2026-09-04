@@ -2,4 +2,4 @@
 registry = "https://registry.npmmirror.com/"
 
 [test]
-preload = ["./test/preload.ts"]
+preload = [ "./test/preload.ts" ]

@@ -1,4 +1,4 @@
-FROM oven/bun:1.3 AS build
+FROM oven/bun:1 AS build
 
 WORKDIR /app
 
@@ -28,7 +28,7 @@ RUN bun build \
 	--outfile migrate \
 	src/db/utils/migrate.ts
 
-FROM debian:bookworm-20260623-slim
+FROM debian:bookworm-slim
 
 WORKDIR /app
 

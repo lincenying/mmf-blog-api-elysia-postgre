@@ -46,7 +46,7 @@ bun run init:config
 
 会在 `src/config/` 下生成（已加入 `.gitignore`，勿提交仓库）：
 
-- `_secret.js` — JWT 签名密钥
+- _secret.js — JWT 签名密钥
 
 ### 3. 配置环境
 
@@ -217,13 +217,13 @@ docker compose down
 若 `docker.io` 拉取失败，可先拉取华为云镜像并打 tag（版本号以 `docker-compose.yml` / `Dockerfile` 为准）：
 
 ```bash
-docker pull swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/oven/bun:1.3.14
-docker tag swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/oven/bun:1.3.14 oven/bun:1.3
-docker rmi swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/oven/bun:1.3.14
+docker pull swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/oven/bun:1.4.0
+docker tag swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/oven/bun:1.4.0 oven/bun:1
+docker rmi swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/oven/bun:1.4.0
 
-docker pull swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/postgres:18.4-alpine3.23
-docker tag swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/postgres:18.4-alpine3.23 postgres:18.4-alpine
-docker rmi swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/postgres:18.4-alpine3.23
+docker pull swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/postgres:18.6-alpine3.24
+docker tag swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/postgres:18.6-alpine3.24 postgres:18-alpine
+docker rmi swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/postgres:18.6-alpine3.24
 ```
 
 ## 开发说明

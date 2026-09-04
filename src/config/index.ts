@@ -71,7 +71,7 @@ catch (error) {
 
 console.log('✅ 配置验证成功')
 
-// 导出类型化的配置对象
+/** 导出类型化的配置对象 */
 export const config = configInstance.getProperties()
 
 // 打印配置加载结果

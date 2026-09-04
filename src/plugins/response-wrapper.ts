@@ -57,7 +57,7 @@ export const responseWrapperMiddleware = new Elysia({
         return successResponse
     })
     .onError(({ error, set, code }) => {
-        let errorMessage = '服务器内部错误'
+        let errorMessage
         let statusCode = 500
 
         if (error instanceof ApiError) {

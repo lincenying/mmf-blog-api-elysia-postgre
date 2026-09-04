@@ -52,7 +52,7 @@
     "postcss"
   ],
   "files.associations": {
-    "*.css": "postcss"
+    "*.css": "css"
   },
   "prettier.enable": true,
   /**

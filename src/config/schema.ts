@@ -13,15 +13,12 @@ convict.addFormat({
         if (typeof val === 'boolean') {
             return
         }
-        if (typeof val === 'string') {
-            // 验证 URL 格式或通配符
-            if (
-                val === '*'
-                || val.startsWith('http://')
-                || val.startsWith('https://')
-            ) {
-                return
-            }
+        if (typeof val === 'string' && (
+            val === '*'
+            || val.startsWith('http://')
+            || val.startsWith('https://')
+        )) {
+            return
         }
         if (Array.isArray(val) && val.every(item => typeof item === 'string')) {
             return
@@ -29,11 +26,8 @@ convict.addFormat({
         throw new Error('Must be a boolean, string, or array of strings')
     },
     coerce(val: unknown) {
-        if (typeof val === 'string') {
-            // 如果是逗号分隔的字符串，转换为数组
-            if (val.includes(',')) {
-                return val.split(',').map(s => s.trim())
-            }
+        if (typeof val === 'string' && val.includes(',')) {
+            return val.split(',').map(s => s.trim())
         }
         return val
     },
