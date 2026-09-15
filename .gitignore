@@ -16,3 +16,4 @@ dist/
 /server-*
 .cursor/rules/global*.mdc
 .qoder/rules/global*.mdc
+.dsh/rules/global*.mdc
