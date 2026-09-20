@@ -16,9 +16,10 @@ const NODE_HEIGHT = 45
 const H_SPACE = 400
 const V_SPACE = 70
 
-// 提示框配置：最多保留3条
+// 提示框配置：最多保留3条；每项 { id, html }，按节点 id / 内容去重
 const MAX_TOOLTIPS = 3
-let tooltipList = [] // 存储提示框列表
+const SEARCH_ALL_MIN_LENGTH = 2
+let tooltipList = []
 
 // 管理面板
 let manageListData = []
@@ -278,40 +279,70 @@ function getAncestors(node) {
     return list
 }
 
-// ===================== 核心：添加多条提示框（最多3条，带关闭按钮） =====================
-function addRelationTooltip(clickNode, ancestors) {
-    if (!ancestors.length)
-        return
-
+/**
+ * 生成「XX 的先辈」提示 HTML。
+ */
+function buildRelationHtml(clickNode, ancestors) {
     const levels = ['父亲', '祖父', '曾祖', '高祖', '天祖', '烈祖', '太祖', '远祖', '鼻祖']
-    let html = `${clickNode.name} 的先辈：`
+    let html = `<span class="name-link" onclick="jumpToNode(${clickNode.id})">${escapeHtml(clickNode.name)}</span> 的先辈：`
 
     ancestors.forEach((item, i) => {
         const rel = levels[i] || `${i + 1}世祖`
-        html += ` <span class="name-link" onclick="jumpToNode(${item.id})">${item.name}</span>（${rel}）`
+        html += ` <span class="name-link" onclick="jumpToNode(${item.id})">${escapeHtml(item.name)}</span>（${rel}）`
         if (i < ancestors.length - 1)
             html += ' →'
     })
 
-    // 加入队列，超过3条删除第一条
-    tooltipList.push(html)
-    if (tooltipList.length > MAX_TOOLTIPS) {
-        tooltipList.shift()
-    }
-
-    renderAllTooltips()
+    return html
 }
 
-// 重新渲染所有提示框（带关闭按钮）
+/**
+ * 判断先辈提示是否已存在（同一节点或 HTML 完全一致则视为重复）。
+ */
+function isDuplicateTooltip(nodeId, html) {
+    return tooltipList.some(item => item.id === nodeId || item.html === html)
+}
+
+/**
+ * 添加先辈提示框：节点 id 或内容完全一致则跳过；满员时优先顶掉未保护的最早一条。
+ */
+function addRelationTooltip(clickNode, ancestors, options = {}) {
+    const replaceOldest = options.replaceOldest !== false
+    const protectedIds = options.protectedIds
+
+    if (!ancestors.length)
+        return false
+
+    const html = buildRelationHtml(clickNode, ancestors)
+    if (isDuplicateTooltip(clickNode.id, html))
+        return false
+
+    if (tooltipList.length >= MAX_TOOLTIPS) {
+        if (!replaceOldest)
+            return false
+        const evictIndex = tooltipList.findIndex(item => !protectedIds || !protectedIds.has(item.id))
+        if (evictIndex === -1)
+            return false
+        tooltipList.splice(evictIndex, 1)
+    }
+
+    tooltipList.push({ id: clickNode.id, html })
+    renderAllTooltips()
+    return true
+}
+
+/**
+ * 重新渲染所有提示框（带关闭按钮）。
+ */
 function renderAllTooltips() {
     const container = document.getElementById('tooltipContainer')
     container.innerHTML = ''
 
-    tooltipList.forEach((content, index) => {
+    tooltipList.forEach((item, index) => {
         const div = document.createElement('div')
         div.className = 'relation-tooltip'
         div.innerHTML = `
-            ${content}
+            ${item.html}
             <span class="tooltip-close" onclick="closeTooltip(${index})">×</span>
         `
         container.appendChild(div)
@@ -346,29 +377,50 @@ function jumpToNode(nodeId) {
     handleClick(targetNode.data)
 }
 
-// ===================== 搜索 =====================
+/**
+ * 按姓名或 ID 搜索节点；关键字满 2 个字时列出全部匹配，并写入先辈列表（受最大条数与去重限制）。
+ */
 function searchNode() {
     const keyword = document.getElementById('searchInput').value.trim()
     if (!keyword) {
         alert('请输入搜索内容')
         return
     }
+
     d3.selectAll('.node').classed('search-result', false)
-    const targetNode = rootData.descendants().find(d => d.data.name.includes(keyword) || d.data.id.toString() === keyword)
-    if (!targetNode) {
+
+    const matched = rootData.descendants().filter(d => d.data.name.includes(keyword) || d.data.id.toString() === keyword)
+    if (!matched.length) {
         alert('未找到匹配的成员')
         return
     }
-    d3.selectAll('.node')
-        .filter(d => d.data.id === targetNode.data.id)
-        .classed('search-result', true)
+
+    const targets = keyword.length >= SEARCH_ALL_MIN_LENGTH ? matched : [matched[0]]
+    const first = targets[0]
+
     svg.transition()
         .duration(800)
         .call(
             zoom.transform,
-            d3.zoomIdentity.translate(window.innerWidth / 2 - targetNode.y, window.innerHeight / 2 - targetNode.x).scale(1),
+            d3.zoomIdentity.translate(window.innerWidth / 2 - first.y, window.innerHeight / 2 - first.x).scale(1),
         )
-    handleClick(targetNode.data)
+
+    handleClick(first.data)
+
+    const protectedIds = new Set(
+        tooltipList.filter(item => item.id === first.data.id).map(item => item.id),
+    )
+    for (const target of targets.slice(1)) {
+        if (protectedIds.size >= MAX_TOOLTIPS)
+            break
+        addRelationTooltip(target.data, getAncestors(target.data), { protectedIds })
+        if (tooltipList.some(item => item.id === target.data.id))
+            protectedIds.add(target.data.id)
+    }
+
+    d3.selectAll('.node')
+        .filter(d => targets.some(t => t.data.id === d.data.id))
+        .classed('search-result', true)
 }
 
 // ===================== 清空 =====================
