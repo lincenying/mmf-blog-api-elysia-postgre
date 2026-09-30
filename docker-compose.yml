@@ -26,7 +26,7 @@ services:
 
   db_postgres:
     container_name: db-postgres
-    image: postgres:18.4-alpine
+    image: postgres:18-alpine
     env_file:
       - .env
       - .env.production

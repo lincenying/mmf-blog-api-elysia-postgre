@@ -1,5 +1,6 @@
 /**
  * Drizzle 统一出口：按 DB_PROVIDER / 环境自动选择 SQLite 或 PostgreSQL。
+ * PostgreSQL 模式下 bun-sqlite 不会打开 sqlite 文件。
  */
 import { db as sqliteDb } from './bun-sqlite'
 import { db as postgreDb } from './postgre-sql'

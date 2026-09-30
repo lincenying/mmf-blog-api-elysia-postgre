@@ -43,6 +43,7 @@ export function createApp() {
         .use(proxyRouter)
         .get('/favicon.ico', file('./public/favicon.ico'))
         .get('/robots.txt', file('./public/robots.txt'))
+        .get('/health', () => 'OK')
         .all('/sm/*', () => '')
         .all('/*', file('./dist/index.html'))
 
