@@ -200,7 +200,9 @@ function renderTree() {
     rootData = d3.hierarchy(treeData)
     treeLayout(rootData)
 
-    g.selectAll('.link')
+    g.append('g')
+        .attr('class', 'link-layer')
+        .selectAll('.link')
         .data(rootData.links())
         .enter()
         .append('path')
@@ -266,7 +268,24 @@ function handleClick(clickNode) {
             .classed('ancestor', true)
     })
 
+    highlightAncestorLinks(clickNode, ancestors)
     addRelationTooltip(clickNode, ancestors)
+}
+
+/**
+ * 高亮当前节点到各位父辈之间的连线。
+ */
+function highlightAncestorLinks(clickNode, ancestors) {
+    const chainIds = new Set([clickNode.id, ...ancestors.map(item => item.id)])
+    const links = g.selectAll('.link')
+    links.classed('ancestor', false)
+    if (!ancestors.length)
+        return
+
+    links
+        .filter(d => chainIds.has(d.source.data.id) && chainIds.has(d.target.data.id))
+        .classed('ancestor', true)
+        .raise()
 }
 
 function getAncestors(node) {
@@ -427,6 +446,7 @@ function searchNode() {
 function clearSearch() {
     document.getElementById('searchInput').value = ''
     d3.selectAll('.node').classed('active ancestor search-result', false)
+    d3.selectAll('.link').classed('ancestor', false)
     tooltipList = []
     renderAllTooltips()
     svg.transition()

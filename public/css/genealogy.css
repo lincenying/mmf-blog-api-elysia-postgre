@@ -422,6 +422,13 @@ body {
     fill: none;
     stroke: #ccc;
     stroke-width: 1.5;
+    transition: stroke 0.3s ease, stroke-width 0.3s ease;
+}
+
+/* 当前节点到父辈的连线 */
+.link.ancestor {
+    stroke: #fa8c16;
+    stroke-width: 3;
 }
 
 /* 关系提示框 - 多条堆叠样式 + 关闭按钮 */
