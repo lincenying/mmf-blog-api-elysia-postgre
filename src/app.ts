@@ -11,6 +11,7 @@ import {
     genealogyRouter,
     jwtRouter,
     proxyRouter,
+    uploadFileRouter,
     uploadRouter,
     wsRouter,
 } from '~/modules'
@@ -38,6 +39,7 @@ export function createApp() {
         .use(genealogyRouter)
         .use(genealogyPageRouter)
         .use(uploadRouter)
+        .use(uploadFileRouter)
         .use(adminRouter)
         .use(jwtRouter)
         .use(proxyRouter)
