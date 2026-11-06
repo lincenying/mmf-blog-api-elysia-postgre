@@ -44,7 +44,7 @@ export function userCookie(
 }
 
 /**
- * 同时携带管理员与前台用户 Cookie（部分前台路由叠了两层 guard）。
+ * 同时携带管理员与前台用户 Cookie。
  */
 export function adminAndUserCookie(
     adminOverrides?: Partial<{ id: string, username: string }>,

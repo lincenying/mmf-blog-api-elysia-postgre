@@ -175,6 +175,45 @@ export class FrontendUserService {
     }
 
     /**
+     * 当前登录用户资料（不含密码）。
+     */
+    public static async getAccount(user_id?: string) {
+        if (!user_id) {
+            throw new ApiError(API_CODE.VALIDATION, '请先登录')
+        }
+
+        try {
+            const [result] = await db.select({
+                _id: users._id,
+                username: users.username,
+                email: users.email,
+                creat_date: users.creat_date,
+                update_date: users.update_date,
+                wx_avatar: users.wx_avatar,
+                wx_signature: users.wx_signature,
+            }).from(users).where(and(eq(users._id, user_id), eq(users.is_delete, 0))).limit(1)
+            if (!result) {
+                throw new ApiError(API_CODE.VALIDATION, '请先登录, 或者数据错误')
+            }
+            return {
+                id: result._id,
+                username: result.username,
+                email: result.email,
+                creat_date: result.creat_date,
+                update_date: result.update_date,
+                wx_avatar: result.wx_avatar,
+                wx_signature: result.wx_signature,
+            }
+        }
+        catch (err: unknown) {
+            if (err instanceof ApiError) {
+                throw err
+            }
+            throw new ApiError(API_CODE.SERVER_ERROR, getErrorMessage(err))
+        }
+    }
+
+    /**
      * 账号编辑。
      */
     public static async account(reqBody: { email: string }, user_id?: string) {

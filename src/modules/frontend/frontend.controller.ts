@@ -1,6 +1,6 @@
 import { Elysia } from 'elysia'
 
-import { createAdminAuthGuard, createCookieSessionApiLayer, createUserAuthGuard } from '~/plugins'
+import { assertAdminAuth, assertUserAuth, createCookieSessionApiLayer } from '~/plugins'
 import { ApiError } from '~/plugins/response-wrapper'
 import { API_CODE } from '~/types/api-code'
 import { cookieValue } from '~/utils/elysia-request'
@@ -50,48 +50,55 @@ export const frontendRouter = new Elysia({ prefix: '/api/frontend' })
         clearUserSessionCookies(cookie)
         return FrontendUserService.logout()
     })
-    .use(createAdminAuthGuard())
-    .get('/comment/delete', async ({ query }) => {
-        return await FrontendCommentService.deletes(query)
-    }, {
-        query: 'id',
-    })
-    .get('/comment/recover', async ({ query }) => {
-        return await FrontendCommentService.recover(query)
-    }, {
-        query: 'id',
-    })
-    .use(createUserAuthGuard())
-    .post('/comment/insert', async ({ body, cookie }) => {
-        return await FrontendCommentService.insert(body, cookieValue(cookie.userid.value))
-    }, {
-        body: 'comment.insert',
-    })
-    .post('/user/account', async ({ body, cookie }) => {
-        return await FrontendUserService.account(body, cookieValue(cookie.userid.value))
-    }, {
-        body: 'user.account',
-    })
-    .post('/user/password', async ({ body, cookie }) => {
-        return await FrontendUserService.password(body, cookieValue(cookie.userid.value))
-    }, {
-        body: 'user.password',
-    })
-    .get('/like', async ({ query, cookie }) => {
-        return await FrontendLikeService.like(query, cookieValue(cookie.userid.value))
-    }, {
-        query: 'id',
-    })
-    .get('/unlike', async ({ query, cookie }) => {
-        return await FrontendLikeService.unlike(query, cookieValue(cookie.userid.value))
-    }, {
-        query: 'id',
-    })
-    .get('/reset/like', async () => {
-        return await FrontendLikeService.resetLike()
-    }, {
-        query: 'id',
-    })
+    .guard({
+        beforeHandle: assertAdminAuth,
+    }, app => app
+        .get('/comment/delete', async ({ query }) => {
+            return await FrontendCommentService.deletes(query)
+        }, {
+            query: 'id',
+        })
+        .get('/comment/recover', async ({ query }) => {
+            return await FrontendCommentService.recover(query)
+        }, {
+            query: 'id',
+        }))
+    .guard({
+        beforeHandle: assertUserAuth,
+    }, app => app
+        .post('/comment/insert', async ({ body, cookie }) => {
+            return await FrontendCommentService.insert(body, cookieValue(cookie.userid.value))
+        }, {
+            body: 'comment.insert',
+        })
+        .get('/user/account', async ({ cookie }) => {
+            return await FrontendUserService.getAccount(cookieValue(cookie.userid.value))
+        })
+        .post('/user/account', async ({ body, cookie }) => {
+            return await FrontendUserService.account(body, cookieValue(cookie.userid.value))
+        }, {
+            body: 'user.account',
+        })
+        .post('/user/password', async ({ body, cookie }) => {
+            return await FrontendUserService.password(body, cookieValue(cookie.userid.value))
+        }, {
+            body: 'user.password',
+        })
+        .get('/like', async ({ query, cookie }) => {
+            return await FrontendLikeService.like(query, cookieValue(cookie.userid.value))
+        }, {
+            query: 'id',
+        })
+        .get('/unlike', async ({ query, cookie }) => {
+            return await FrontendLikeService.unlike(query, cookieValue(cookie.userid.value))
+        }, {
+            query: 'id',
+        })
+        .get('/reset/like', async () => {
+            return await FrontendLikeService.resetLike()
+        }, {
+            query: 'id',
+        }))
     .all('/*', async () => {
         throw new ApiError(API_CODE.NOT_FOUND, '接口不存在')
     })

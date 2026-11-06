@@ -4,7 +4,6 @@ import { eq } from 'drizzle-orm'
 import { articles, sqliteDb } from '~/db'
 
 import {
-    adminAndUserCookie,
     adminCookie,
     apiGet,
     apiPost,
@@ -173,7 +172,7 @@ describe('API /api/frontend', () => {
                 id: FIXTURES.article.id,
                 content: '新评论内容',
             }, {
-                cookie: adminAndUserCookie(),
+                cookie: userCookie(),
             })
             expect(json.code).toBe(200)
             expect(json.data!.id).toBeTruthy()
@@ -189,6 +188,29 @@ describe('API /api/frontend', () => {
             expect(after!.comment_count).toBe(2)
         })
 
+        it('GET /user/account 无 Cookie → 403', async () => {
+            const json = await apiGet(app, '/api/frontend/user/account')
+            expect(json.code).toBe(403)
+        })
+
+        it('GET /user/account 仅用户 Cookie 成功', async () => {
+            const json = await apiGet<{ id: string, email: string, password?: string }>(app, '/api/frontend/user/account', {
+                cookie: userCookie(),
+            })
+            expect(json.code).toBe(200)
+            expect(json.data!.id).toBe(FIXTURES.user.id)
+            expect(json.data!.email).toBe(FIXTURES.user.email)
+            expect(json.data!.password).toBeUndefined()
+        })
+
+        it('前台用户 Cookie 不能删除评论', async () => {
+            const json = await apiGet(app, '/api/frontend/comment/delete', {
+                query: { id: FIXTURES.comment.id },
+                cookie: userCookie(),
+            })
+            expect(json.code).toBe(403)
+        })
+
         it('POST /user/account 无 Cookie → 403', async () => {
             const json = await apiPost(app, '/api/frontend/user/account', {
                 email: 'changed@test.com',
@@ -200,7 +222,7 @@ describe('API /api/frontend', () => {
             const json = await apiPost<{ email: string }>(app, '/api/frontend/user/account', {
                 email: 'changed@test.com',
             }, {
-                cookie: adminAndUserCookie(),
+                cookie: userCookie(),
             })
             expect(json.code).toBe(200)
             expect(json.data!.email).toBe('changed@test.com')
@@ -222,7 +244,7 @@ describe('API /api/frontend', () => {
                 old_password: FIXTURES.user.password,
                 password: 'newpass99',
             }, {
-                cookie: adminAndUserCookie(),
+                cookie: userCookie(),
             })
             expect(json.code).toBe(200)
 
@@ -244,7 +266,7 @@ describe('API /api/frontend', () => {
 
             const json = await apiGet(app, '/api/frontend/like', {
                 query: { id: FIXTURES.article.id },
-                cookie: adminAndUserCookie(),
+                cookie: userCookie(),
             })
             expect(json.code).toBe(200)
             expect(json.data).toBe('操作成功')
@@ -265,13 +287,13 @@ describe('API /api/frontend', () => {
         it('GET /unlike 成功', async () => {
             await apiGet(app, '/api/frontend/like', {
                 query: { id: FIXTURES.article.id },
-                cookie: adminAndUserCookie(),
+                cookie: userCookie(),
             })
             expect((await findArticle(FIXTURES.article.id))!.like).toBe(1)
 
             const json = await apiGet(app, '/api/frontend/unlike', {
                 query: { id: FIXTURES.article.id },
-                cookie: adminAndUserCookie(),
+                cookie: userCookie(),
             })
             expect(json.code).toBe(200)
             expect(json.data).toBe('操作成功')
@@ -291,7 +313,7 @@ describe('API /api/frontend', () => {
         it('GET /reset/like 成功', async () => {
             await apiGet(app, '/api/frontend/like', {
                 query: { id: FIXTURES.article.id },
-                cookie: adminAndUserCookie(),
+                cookie: userCookie(),
             })
             await sqliteDb.update(articles)
                 .set({ like: 99 })
@@ -300,7 +322,7 @@ describe('API /api/frontend', () => {
 
             const json = await apiGet(app, '/api/frontend/reset/like', {
                 query: { id: FIXTURES.article.id },
-                cookie: adminAndUserCookie(),
+                cookie: userCookie(),
             })
             expect(json.code).toBe(200)
             expect(json.data).toBe('操作成功')
@@ -309,12 +331,12 @@ describe('API /api/frontend', () => {
             expect(await countArticleLikes(FIXTURES.article.id)).toBe(1)
         })
 
-        it('仅 user Cookie 不足以通过叠层 guard', async () => {
+        it('仅 user Cookie 可通过前台用户鉴权', async () => {
             const json = await apiGet(app, '/api/frontend/like', {
                 query: { id: FIXTURES.article.id },
                 cookie: userCookie(),
             })
-            expect(json.code).toBe(403)
+            expect(json.code).toBe(200)
         })
     })
 })
