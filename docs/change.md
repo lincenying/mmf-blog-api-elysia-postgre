@@ -1,5 +1,19 @@
 # 变更记录
 
+## 2026-11-06 23:09:47
+
+- **修复**：`GET /api/frontend/user/logout`（以及后台、族谱退出）在请求未带回 Cookie 时不会下发 `Set-Cookie`。Elysia 的 `remove()` 遇到空值会直接跳过。改为始终写入 `Max-Age=0; Path=/`，清除 `user`、`userid`、`username`、`useremail`。
+
+---
+
+**本次改动建议的 commit message（未自动提交）：**
+
+```
+fix: 退出登录时始终清除会话 Cookie
+```
+
+---
+
 ## 2026-11-06 22:00:32
 
 - **修复**：前台用户登录后访问 `/api/frontend/user/account` 返回 403。原因是管理员守卫用 `.as('scoped')` 挂到后续全部路由（含 404），校验的是 `b_user` 而不是前台 `user` Cookie。改为按路由分组校验。

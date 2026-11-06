@@ -61,10 +61,18 @@ describe('API /api/backend', () => {
             expect(json.code).toBe(201)
         })
 
-        it('GET /admin/logout', async () => {
-            const json = await apiGet(app, '/api/backend/admin/logout')
+        it('GET /admin/logout 未带 Cookie 也下发清除指令', async () => {
+            const response = await app.handle(new Request('http://localhost/api/backend/admin/logout'))
+            const json = await response.json() as { code: number, data: string }
             expect(json.code).toBe(200)
             expect(json.data).toBe('退出成功')
+            const setCookies = response.headers.getSetCookie()
+            for (const name of ['b_user', 'b_userid', 'b_username']) {
+                const header = setCookies.find(item => item.startsWith(`${name}=`))
+                expect(header).toBeDefined()
+                expect(header).toContain('Max-Age=0')
+                expect(header).toContain('Path=/')
+            }
         })
     })
 

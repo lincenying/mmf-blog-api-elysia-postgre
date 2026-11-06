@@ -22,6 +22,18 @@ import {
     userCookie,
 } from '../../helpers'
 
+/**
+ * 断言响应要求浏览器删除指定会话 Cookie。
+ */
+function assertSessionCookiesCleared(setCookies: string[], names: string[]) {
+    for (const name of names) {
+        const header = setCookies.find(item => item.startsWith(`${name}=`))
+        expect(header).toBeDefined()
+        expect(header).toContain('Max-Age=0')
+        expect(header).toContain('Path=/')
+    }
+}
+
 describe('API /api/frontend', () => {
     let app: TestApp
 
@@ -97,10 +109,21 @@ describe('API /api/frontend', () => {
             expect(json.code).toBe(201)
         })
 
-        it('GET /user/logout', async () => {
-            const json = await apiGet(app, '/api/frontend/user/logout')
+        it('GET /user/logout 未带 Cookie 也下发清除指令', async () => {
+            const response = await app.handle(new Request('http://localhost/api/frontend/user/logout'))
+            const json = await response.json() as { code: number, data: string }
             expect(json.code).toBe(200)
             expect(json.data).toBe('退出成功')
+            assertSessionCookiesCleared(response.headers.getSetCookie(), ['user', 'userid', 'username', 'useremail'])
+        })
+
+        it('GET /user/logout 清除已有会话 Cookie', async () => {
+            const response = await app.handle(new Request('http://localhost/api/frontend/user/logout', {
+                headers: { cookie: userCookie() },
+            }))
+            const json = await response.json() as { code: number, data: string }
+            expect(json.code).toBe(200)
+            assertSessionCookiesCleared(response.headers.getSetCookie(), ['user', 'userid', 'username', 'useremail'])
         })
     })
 

@@ -7,6 +7,7 @@ export const cookiesSchema = t.Partial(
         user: t.String(),
         userid: t.String(),
         username: t.String(),
+        useremail: t.String(),
         b_user: t.String(),
         b_userid: t.String(),
         b_username: t.String(),

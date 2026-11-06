@@ -1,9 +1,11 @@
 import { config } from '~/config'
 
-/** Elysia Cookie 字段最小操作面（用于登录后写入 HttpOnly Cookie）。 */
+/** Elysia Cookie 字段最小操作面（用于登录后写入、退出时清除）。 */
 export interface ICookieField {
     value?: unknown
     maxAge?: number
+    path?: string
+    expires?: Date
     remove?: () => void
 }
 
@@ -37,12 +39,26 @@ export function applyAdminSessionCookies(
 }
 
 /**
+ * 通知浏览器删除指定 Cookie。
+ * Elysia 的 remove() 仅在请求已带回该 Cookie 时才写 Set-Cookie，未带回时退出不会生效。
+ */
+function expireCookie(field: ICookieField | undefined): void {
+    if (!field) {
+        return
+    }
+    field.path = '/'
+    field.value = ''
+    field.maxAge = 0
+    field.expires = new Date(0)
+}
+
+/**
  * 清除后台管理员会话 Cookie。
  */
 export function clearAdminSessionCookies(cookie: Record<string, ICookieField>): void {
-    cookie.b_user?.remove?.()
-    cookie.b_userid?.remove?.()
-    cookie.b_username?.remove?.()
+    expireCookie(cookie.b_user)
+    expireCookie(cookie.b_userid)
+    expireCookie(cookie.b_username)
 }
 
 /**
@@ -69,8 +85,8 @@ export function applyUserSessionCookies(
  * 清除前台用户会话 Cookie。
  */
 export function clearUserSessionCookies(cookie: Record<string, ICookieField>): void {
-    cookie.user?.remove?.()
-    cookie.userid?.remove?.()
-    cookie.username?.remove?.()
-    cookie.useremail?.remove?.()
+    expireCookie(cookie.user)
+    expireCookie(cookie.userid)
+    expireCookie(cookie.username)
+    expireCookie(cookie.useremail)
 }
