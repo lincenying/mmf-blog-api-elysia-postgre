@@ -9,6 +9,7 @@ CREATE TABLE `admins` (
 	`timestamp` integer
 );
 --> statement-breakpoint
+CREATE INDEX `idx_admins_username` ON `admins` (`username`);--> statement-breakpoint
 CREATE TABLE `archive` (
 	`c_id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`c_title` text,
@@ -26,6 +27,7 @@ CREATE TABLE `likes` (
 	`timestamp` integer
 );
 --> statement-breakpoint
+CREATE INDEX `idx_likes_user_id` ON `likes` (`user_id`);--> statement-breakpoint
 CREATE UNIQUE INDEX `likes_article_id_user_id_unique` ON `likes` (`article_id`,`user_id`);--> statement-breakpoint
 CREATE TABLE `articles` (
 	`_id` text PRIMARY KEY NOT NULL,
@@ -44,6 +46,9 @@ CREATE TABLE `articles` (
 	`timestamp` integer
 );
 --> statement-breakpoint
+CREATE INDEX `idx_articles_is_delete_update_date` ON `articles` (`is_delete`,`update_date`);--> statement-breakpoint
+CREATE INDEX `idx_articles_is_delete_category_update_date` ON `articles` (`is_delete`,`category`,`update_date`);--> statement-breakpoint
+CREATE INDEX `idx_articles_is_delete_category_visit` ON `articles` (`is_delete`,`category`,`visit`);--> statement-breakpoint
 CREATE TABLE `categories` (
 	`_id` text PRIMARY KEY NOT NULL,
 	`cate_name` text NOT NULL,
@@ -54,6 +59,7 @@ CREATE TABLE `categories` (
 	`timestamp` integer
 );
 --> statement-breakpoint
+CREATE INDEX `idx_categories_cate_order` ON `categories` (`cate_order`);--> statement-breakpoint
 CREATE TABLE `comments` (
 	`_id` text PRIMARY KEY NOT NULL,
 	`article_id` text NOT NULL,
@@ -64,6 +70,8 @@ CREATE TABLE `comments` (
 	`timestamp` integer
 );
 --> statement-breakpoint
+CREATE INDEX `idx_comments_article_id_is_delete` ON `comments` (`article_id`,`is_delete`);--> statement-breakpoint
+CREATE INDEX `idx_comments_userid` ON `comments` (`userid`);--> statement-breakpoint
 CREATE TABLE `genealogy` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`name` text NOT NULL,
@@ -73,6 +81,7 @@ CREATE TABLE `genealogy` (
 	`parent_name` text
 );
 --> statement-breakpoint
+CREATE INDEX `idx_genealogy_parent` ON `genealogy` (`parent`);--> statement-breakpoint
 CREATE TABLE `users` (
 	`_id` text PRIMARY KEY NOT NULL,
 	`username` text NOT NULL,
@@ -85,3 +94,6 @@ CREATE TABLE `users` (
 	`wx_avatar` text,
 	`wx_signature` text
 );
+--> statement-breakpoint
+CREATE INDEX `idx_users_username` ON `users` (`username`);--> statement-breakpoint
+CREATE INDEX `idx_users_email` ON `users` (`email`);

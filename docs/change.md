@@ -1,5 +1,19 @@
 # 变更记录
 
+## 2026-11-12 15:54:50
+
+- **迁移**：索引已合并进新的基线 `drizzle-postgre/0000_moaning_randall.sql` 与 `drizzle-sqlite/0000_odd_orphan.sql`。已有库跳过建表时，改为从该基线 SQL 提取 `CREATE INDEX` 并幂等执行，不再读取已删除的 `0001_add_indexes.sql`。
+
+---
+
+**本次改动建议的 commit message（未自动提交）：**
+
+```
+fix: 已有库按新基线迁移补齐索引
+```
+
+---
+
 ## 2026-11-06 23:09:47
 
 - **修复**：`GET /api/frontend/user/logout`（以及后台、族谱退出）在请求未带回 Cookie 时不会下发 `Set-Cookie`。Elysia 的 `remove()` 遇到空值会直接跳过。改为始终写入 `Max-Age=0; Path=/`，清除 `user`、`userid`、`username`、`useremail`。

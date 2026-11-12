@@ -5,7 +5,37 @@ import process from 'node:process'
 import { migrate as migrateSqlite } from 'drizzle-orm/bun-sqlite/migrator'
 import { db, sqlite } from '../bun-sqlite'
 
-const INDEX_MIGRATION_FILE = resolve('./drizzle-sqlite/0001_add_indexes.sql')
+const MIGRATIONS_FOLDER = './drizzle-sqlite'
+
+interface IDrizzleJournal {
+    entries: Array<{ tag: string }>
+}
+
+/**
+ * 定位当前基线迁移 SQL。索引已写在该文件中。
+ */
+function resolveBaselineSql(folder: string) {
+    const journal = JSON.parse(readFileSync(resolve(folder, 'meta/_journal.json'), 'utf8')) as IDrizzleJournal
+    const tag = journal.entries[0]?.tag
+    if (!tag) {
+        throw new Error(`[migrate] ${folder} 缺少基线迁移记录`)
+    }
+    return resolve(folder, `${tag}.sql`)
+}
+
+/**
+ * 从基线 SQL 取出建索引语句，并改成可重复执行。
+ */
+function loadIndexStatements(folder: string) {
+    const sql = readFileSync(resolveBaselineSql(folder), 'utf8')
+    return sql
+        .split('--> statement-breakpoint')
+        .map(part => part.trim())
+        .filter(part => /^CREATE (UNIQUE )?INDEX\b/i.test(part))
+        .map(part => part
+            .replace(/^CREATE UNIQUE INDEX\b/i, 'CREATE UNIQUE INDEX IF NOT EXISTS')
+            .replace(/^CREATE INDEX\b/i, 'CREATE INDEX IF NOT EXISTS'))
+}
 
 const CORE_TABLES = [
     'users',
@@ -35,15 +65,10 @@ function hasSqliteSchemaTables(client: Database): boolean {
 }
 
 /**
- * 在已有库上幂等执行索引迁移（CREATE INDEX IF NOT EXISTS）。
+ * 在已有库上幂等补齐基线里的索引。
  */
 function applyIndexMigration(client: Database) {
-    const sqlText = readFileSync(INDEX_MIGRATION_FILE, 'utf8')
-    const statements = sqlText
-        .split('--> statement-breakpoint')
-        .map(part => part.trim())
-        .filter(Boolean)
-
+    const statements = loadIndexStatements(MIGRATIONS_FOLDER)
     for (const statement of statements) {
         client.run(statement)
     }
@@ -51,7 +76,7 @@ function applyIndexMigration(client: Database) {
 
 /**
  * 执行 SQLite 结构迁移：应用 drizzle-sqlite。
- * 若核心业务表已存在，跳过基线迁移，但仍补齐索引。
+ * 若核心业务表已存在，跳过建表，仍从基线 SQL 补齐索引。
  */
 async function runSqliteMigrate() {
     if (hasSqliteSchemaTables(sqlite)) {
@@ -61,7 +86,7 @@ async function runSqliteMigrate() {
         return
     }
 
-    await migrateSqlite(db, { migrationsFolder: './drizzle-sqlite' })
+    await migrateSqlite(db, { migrationsFolder: MIGRATIONS_FOLDER })
     console.log('SQLite migrations applied.')
 }
 

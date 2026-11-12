@@ -1,7 +1,7 @@
 {
   "name": "mmf-blog-api-elysia",
   "type": "module",
-  "version": "1.26.1107",
+  "version": "1.26.1112",
   "main": "dist/index.js",
   "scripts": {
     "dev": "bun --watch run src/index.ts",
@@ -24,7 +24,7 @@
     "tsc": "tsc"
   },
   "dependencies": {
-    "@elysiajs/cors": "^1.4.2",
+    "@elysiajs/cors": "^1.4.3",
     "@elysiajs/html": "^1.4.2",
     "@elysiajs/jwt": "^1.4.2",
     "@elysiajs/server-timing": "^1.4.1",
@@ -36,7 +36,7 @@
     "drizzle-kit": "^0.31.11",
     "drizzle-orm": "^0.45.4",
     "drizzle-zod": "^0.8.3",
-    "elysia": "^1.4.31",
+    "elysia": "^1.4.32",
     "highlight.js": "^11.12.0",
     "js-yaml": "^5.5.0",
     "jsonwebtoken": "^9.0.3",

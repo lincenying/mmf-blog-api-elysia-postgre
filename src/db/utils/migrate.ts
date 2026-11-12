@@ -7,18 +7,43 @@ import { db, pool } from '../postgre-sql'
 import { ensurePostgresDatabase } from './ensure-postgres-db'
 import { hasPostgresSchemaTables } from './has-postgres-schema-tables'
 
-const INDEX_MIGRATION_FILE = resolve('./drizzle-postgre/0001_add_indexes.sql')
+const MIGRATIONS_FOLDER = './drizzle-postgre'
+
+interface IDrizzleJournal {
+    entries: Array<{ tag: string }>
+}
 
 /**
- * 在已有库上幂等执行索引迁移（CREATE INDEX IF NOT EXISTS）。
+ * 定位当前基线迁移 SQL。索引已写在该文件中。
  */
-async function applyIndexMigration(pgPool: Pool) {
-    const sql = readFileSync(INDEX_MIGRATION_FILE, 'utf8')
-    const statements = sql
+function resolveBaselineSql(folder: string) {
+    const journal = JSON.parse(readFileSync(resolve(folder, 'meta/_journal.json'), 'utf8')) as IDrizzleJournal
+    const tag = journal.entries[0]?.tag
+    if (!tag) {
+        throw new Error(`[migrate] ${folder} 缺少基线迁移记录`)
+    }
+    return resolve(folder, `${tag}.sql`)
+}
+
+/**
+ * 从基线 SQL 取出建索引语句，并改成可重复执行。
+ */
+function loadIndexStatements(folder: string) {
+    const sql = readFileSync(resolveBaselineSql(folder), 'utf8')
+    return sql
         .split('--> statement-breakpoint')
         .map(part => part.trim())
-        .filter(Boolean)
+        .filter(part => /^CREATE (UNIQUE )?INDEX\b/i.test(part))
+        .map(part => part
+            .replace(/^CREATE UNIQUE INDEX\b/i, 'CREATE UNIQUE INDEX IF NOT EXISTS')
+            .replace(/^CREATE INDEX\b/i, 'CREATE INDEX IF NOT EXISTS'))
+}
 
+/**
+ * 在已有库上幂等补齐基线里的索引。
+ */
+async function applyIndexMigration(pgPool: Pool) {
+    const statements = loadIndexStatements(MIGRATIONS_FOLDER)
     for (const statement of statements) {
         await pgPool.query(statement)
     }
@@ -26,7 +51,7 @@ async function applyIndexMigration(pgPool: Pool) {
 
 /**
  * 执行 PostgreSQL 结构迁移：必要时建库，再应用 drizzle-postgre。
- * 若核心业务表已存在（旧库换基线等），跳过基线迁移，但仍补齐索引。
+ * 若核心业务表已存在（旧库换基线等），跳过建表，仍从基线 SQL 补齐索引。
  */
 async function runPostgresMigrate() {
     await ensurePostgresDatabase()
@@ -38,7 +63,7 @@ async function runPostgresMigrate() {
         return
     }
 
-    await migratePg(db, { migrationsFolder: './drizzle-postgre' })
+    await migratePg(db, { migrationsFolder: MIGRATIONS_FOLDER })
     console.log('PostgreSQL migrations applied.')
 }
 
