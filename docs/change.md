@@ -1,5 +1,21 @@
 # 变更记录
 
+## 2026-11-16 09:51:39
+
+- **安全**：`POST /api/upload/image` 改为管理员 Cookie 鉴权，单文件上限 5MB，只接受 jpeg、png、gif、webp 声明类型，并以文件头决定扩展名后写入 `uploads`。
+- **安全**：`GET /uploads/*` 只返回白名单扩展名的普通文件，拒绝目录穿越和软链接，响应增加 `X-Content-Type-Options: nosniff`。
+- **接口**：上传成功额外返回 `url`（`/uploads/<filename>`），`type` 为识别出的 MIME。
+
+---
+
+**本次改动建议的 commit message（未自动提交）：**
+
+```
+fix: 限制图片上传类型并要求管理员登录
+```
+
+---
+
 ## 2026-11-12 15:54:50
 
 - **迁移**：索引已合并进新的基线 `drizzle-postgre/0000_moaning_randall.sql` 与 `drizzle-sqlite/0000_odd_orphan.sql`。已有库跳过建表时，改为从该基线 SQL 提取 `CREATE INDEX` 并幂等执行，不再读取已删除的 `0001_add_indexes.sql`。

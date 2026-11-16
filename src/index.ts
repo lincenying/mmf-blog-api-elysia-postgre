@@ -3,10 +3,10 @@ import { mkdir } from 'fs/promises'
 
 import { createApp } from '~/app'
 import { config } from '~/config'
+import { UPLOAD_DIR } from '~/modules/upload/upload.service'
 import { logger } from '~/utils/logger'
 
 void (async () => {
-    const UPLOAD_DIR = './uploads'
     await mkdir(UPLOAD_DIR, { recursive: true })
 
     // 这个没什么用, 只是让开发环境时, 修改twig模板会重启进程
