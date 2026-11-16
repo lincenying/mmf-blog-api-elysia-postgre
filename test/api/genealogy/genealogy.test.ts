@@ -137,6 +137,21 @@ describe('API /api/genealogy', () => {
             expect(row!.parent_name).toBe(FIXTURES.genealogy.rootName)
         })
 
+        it('PUT /:id 改名后同步子辈的 parent_name', async () => {
+            const json = await apiPut(app, '/api/genealogy/1', {
+                name: '始祖改名',
+                parent: 0,
+                sex: '男',
+            }, {
+                cookie: adminCookie(),
+            })
+            expect(json.code).toBe(200)
+
+            expect((await findGenealogy(1))!.name).toBe('始祖改名')
+            expect((await findGenealogy(2))!.parent_name).toBe('始祖改名')
+            expect((await findGenealogy(3))!.parent_name).toBe('始祖改名')
+        })
+
         it('DELETE /:id 无 Cookie → 403', async () => {
             const json = await apiDelete(app, '/api/genealogy/3')
             expect(json.code).toBe(403)

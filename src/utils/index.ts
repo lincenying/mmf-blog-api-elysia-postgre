@@ -59,7 +59,6 @@ export function getNowTime(format: string = 'YYYY-MM-DD HH:mm:ss') {
 export function getTemplateDir(file: string) {
     const templateRoot = process.cwd()
     const fileDir = path.resolve(templateRoot, file)
-    console.log(fileDir)
     if (existsSync(fileDir)) {
         return fileDir
     }

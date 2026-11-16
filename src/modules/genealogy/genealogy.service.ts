@@ -5,7 +5,7 @@ import { asc, eq } from 'drizzle-orm'
 import { db, genealogy } from '~/db'
 import { ApiError } from '~/plugins/response-wrapper'
 import { API_CODE } from '~/types/api-code'
-import { getErrorMessage } from '~/utils'
+import { throwAsApiError } from '~/utils/service-error'
 
 /**
  * 族谱业务（列表公开；增删改由 Controller 层管理员守卫保护）。
@@ -19,7 +19,7 @@ export class GenealogyService {
             return await db.select().from(genealogy).orderBy(asc(genealogy.id))
         }
         catch (err: unknown) {
-            throw new ApiError(API_CODE.SERVER_ERROR, getErrorMessage(err))
+            throwAsApiError(err, '获取族谱列表失败')
         }
     }
 
@@ -103,10 +103,7 @@ export class GenealogyService {
             return result
         }
         catch (err: unknown) {
-            if (err instanceof ApiError) {
-                throw err
-            }
-            throw new ApiError(API_CODE.SERVER_ERROR, getErrorMessage(err))
+            throwAsApiError(err, '新增族谱成员失败')
         }
     }
 
@@ -141,20 +138,26 @@ export class GenealogyService {
             }
 
             const parent_name = await this.resolveParentName(parent)
-            const [result] = await db.update(genealogy).set({
-                name,
-                parent,
-                sex,
-                desc,
-                parent_name,
-            }).where(eq(genealogy.id, id)).returning()
+            const result = await db.transaction(async (tx) => {
+                const [updated] = await tx.update(genealogy).set({
+                    name,
+                    parent,
+                    sex,
+                    desc,
+                    parent_name,
+                }).where(eq(genealogy.id, id)).returning()
+
+                if (existing.name !== name) {
+                    await tx.update(genealogy)
+                        .set({ parent_name: name })
+                        .where(eq(genealogy.parent, id))
+                }
+                return updated
+            })
             return result
         }
         catch (err: unknown) {
-            if (err instanceof ApiError) {
-                throw err
-            }
-            throw new ApiError(API_CODE.SERVER_ERROR, getErrorMessage(err))
+            throwAsApiError(err, '更新族谱成员失败')
         }
     }
 
@@ -181,10 +184,7 @@ export class GenealogyService {
             return '删除成功'
         }
         catch (err: unknown) {
-            if (err instanceof ApiError) {
-                throw err
-            }
-            throw new ApiError(API_CODE.SERVER_ERROR, getErrorMessage(err))
+            throwAsApiError(err, '删除族谱成员失败')
         }
     }
 }
