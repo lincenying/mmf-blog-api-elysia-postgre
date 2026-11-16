@@ -5,9 +5,10 @@ import { desc, eq } from 'drizzle-orm'
 import { categories, db } from '~/db'
 import { ApiError } from '~/plugins/response-wrapper'
 import { API_CODE } from '~/types/api-code'
-import { getErrorMessage, getNowTime } from '~/utils'
+import { getNowTime } from '~/utils'
 import { withVirtualId } from '~/utils/db-mapper'
 import { generateObjectId, isValidObjectId } from '~/utils/object-id'
+import { throwAsApiError } from '~/utils/service-error'
 
 /**
  * 后台分类业务（Drizzle）。
@@ -24,7 +25,7 @@ export class BackendCategoryService {
             }
         }
         catch (err: unknown) {
-            throw new ApiError(API_CODE.SERVER_ERROR, getErrorMessage(err))
+            throwAsApiError(err, '获取分类列表失败')
         }
     }
 
@@ -43,7 +44,7 @@ export class BackendCategoryService {
             return result ? withVirtualId(result) : null
         }
         catch (err: unknown) {
-            throw new ApiError(API_CODE.SERVER_ERROR, getErrorMessage(err))
+            throwAsApiError(err, '获取分类详情失败')
         }
     }
 
@@ -72,7 +73,7 @@ export class BackendCategoryService {
             return withVirtualId(result)
         }
         catch (err: unknown) {
-            throw new ApiError(API_CODE.SERVER_ERROR, getErrorMessage(err))
+            throwAsApiError(err, '新增分类失败')
         }
     }
 
@@ -87,11 +88,13 @@ export class BackendCategoryService {
         }
 
         try {
-            await db.update(categories).set({ is_delete: 1 }).where(eq(categories._id, _id))
+            const [updated] = await db.update(categories).set({ is_delete: 1 }).where(eq(categories._id, _id)).returning()
+            if (!updated)
+                throw new ApiError(API_CODE.VALIDATION, '分类不存在')
             return '删除成功'
         }
         catch (err: unknown) {
-            throw new ApiError(API_CODE.SERVER_ERROR, getErrorMessage(err))
+            throwAsApiError(err, '删除分类失败')
         }
     }
 
@@ -106,11 +109,13 @@ export class BackendCategoryService {
         }
 
         try {
-            await db.update(categories).set({ is_delete: 0 }).where(eq(categories._id, _id))
+            const [updated] = await db.update(categories).set({ is_delete: 0 }).where(eq(categories._id, _id)).returning()
+            if (!updated)
+                throw new ApiError(API_CODE.VALIDATION, '分类不存在')
             return '恢复成功'
         }
         catch (err: unknown) {
-            throw new ApiError(API_CODE.SERVER_ERROR, getErrorMessage(err))
+            throwAsApiError(err, '恢复分类失败')
         }
     }
 
@@ -120,6 +125,10 @@ export class BackendCategoryService {
     public static async modify(reqBody: CategoryModify) {
         const { id: _id, cate_name, cate_order } = reqBody
 
+        if (!_id || !isValidObjectId(_id)) {
+            throw new ApiError(API_CODE.VALIDATION, '参数错误')
+        }
+
         try {
             const [result] = await db.update(categories)
                 .set({
@@ -128,10 +137,12 @@ export class BackendCategoryService {
                 })
                 .where(eq(categories._id, _id))
                 .returning()
-            return result ? withVirtualId(result) : null
+            if (!result)
+                throw new ApiError(API_CODE.VALIDATION, '分类不存在')
+            return withVirtualId(result)
         }
         catch (err: unknown) {
-            throw new ApiError(API_CODE.SERVER_ERROR, getErrorMessage(err))
+            throwAsApiError(err, '修改分类失败')
         }
     }
 }

@@ -11,3 +11,11 @@ export function withVirtualId<T extends { _id: string }>(row: T): T & { id: stri
 export function withVirtualIds<T extends { _id: string }>(rows: T[]): Array<T & { id: string }> {
     return rows.map(withVirtualId)
 }
+
+/**
+ * 去掉密码字段后再返回给调用方。
+ */
+export function withoutPassword<T extends { password: string }>(row: T): Omit<T, 'password'> {
+    const { password: _password, ...safe } = row
+    return safe
+}

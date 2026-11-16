@@ -3,7 +3,6 @@ import { Elysia } from 'elysia'
 import { createAdminAuthGuard, createCookieSessionApiLayer } from '~/plugins'
 import { ApiError } from '~/plugins/response-wrapper'
 import { API_CODE } from '~/types/api-code'
-import { cookieValue, queryString } from '~/utils/elysia-request'
 import { applyAdminSessionCookies, clearAdminSessionCookies } from '~/utils/session-cookie'
 
 import { FrontendUserService } from '../frontend/frontend-user.service'
@@ -12,7 +11,7 @@ import { BackendArticleService } from './backend-article.service'
 import { BackendCategoryService } from './backend-category.service'
 import { BackendUserService } from './backend-user.service'
 
-/** 后台管理 REST 插件：路由仅转发至 Service。 */
+/** 后台管理 REST 插件：路由仅转发至 Service。分类读取保持公开，供前台展示。 */
 export const backendRouter = new Elysia({ prefix: '/api/backend' })
     .use(createCookieSessionApiLayer())
     .get('/category/list', async () => {
@@ -115,9 +114,8 @@ export const backendRouter = new Elysia({ prefix: '/api/backend' })
     }, {
         query: 'other.page',
     })
-    .get('/user/item', async ({ query, cookie }) => {
-        const userid = queryString(query.id) ?? cookieValue(cookie.userid.value)
-        return await FrontendUserService.getItem(userid)
+    .get('/user/item', async ({ query }) => {
+        return await FrontendUserService.getItem(query.id)
     }, {
         query: 'id',
     })

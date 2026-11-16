@@ -31,17 +31,18 @@ export function buildOrderBy<T extends object>(
 }
 
 /**
- * 不区分大小写的模糊匹配模式。
+ * 不区分大小写的模糊匹配模式。`%`、`_` 和反斜杠按字面量转义。
  */
 export function ilikePattern(key: string): string {
-    return `%${key}%`
+    const escaped = key.replace(/[\\%_]/g, match => `\\${match}`)
+    return `%${escaped}%`
 }
 
 /**
  * 不区分大小写的列模糊匹配（SQLite / PostgreSQL 通用）。
  */
 export function ilikeColumn(column: AnyColumn, key: string): SQL {
-    return sql`lower(${column}) like lower(${ilikePattern(key)})`
+    return sql`lower(${column}) like lower(${ilikePattern(key)}) escape '\\'`
 }
 
 /**
@@ -52,8 +53,8 @@ export function increment(column: AnyColumn): SQL {
 }
 
 /**
- * 列自减 1 的 SQL 表达式。
+ * 列自减 1 的 SQL 表达式。计数已经是 0 时保持为 0。
  */
 export function decrement(column: AnyColumn): SQL {
-    return sql`${column} - 1`
+    return sql`case when ${column} > 0 then ${column} - 1 else 0 end`
 }

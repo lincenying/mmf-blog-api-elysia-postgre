@@ -178,6 +178,33 @@ describe('API /api/backend', () => {
             expect(cateAfter!.cate_num).toBe(1)
         })
 
+        it('GET /article/delete 重复删除不重复扣减分类计数', async () => {
+            await apiGet(app, '/api/backend/article/delete', {
+                cookie: adminCookie(),
+                query: { id: FIXTURES.articleOther.id },
+            })
+            await apiGet(app, '/api/backend/article/delete', {
+                cookie: adminCookie(),
+                query: { id: FIXTURES.articleOther.id },
+            })
+
+            expect((await findArticle(FIXTURES.articleOther.id))!.is_delete).toBe(1)
+            expect((await findCategory(FIXTURES.category.id))!.cate_num).toBe(1)
+        })
+
+        it('POST /article/insert 分类不存在', async () => {
+            const json = await apiPost(app, '/api/backend/article/insert', {
+                category: 'aaaaaaaaaaaaaaaaaaaaaaaa|不存在',
+                content: '# New',
+                title: '新文章',
+                html: '<h1>New</h1>',
+            }, {
+                cookie: adminCookie(),
+            })
+            expect(json.code).toBe(201)
+            expect((await findCategory(FIXTURES.category.id))!.cate_num).toBe(2)
+        })
+
         it('GET /article/recover 成功', async () => {
             await apiGet(app, '/api/backend/article/delete', {
                 cookie: adminCookie(),
@@ -273,25 +300,27 @@ describe('API /api/backend', () => {
         })
 
         it('GET /admin/list 成功', async () => {
-            const json = await apiGet<{ list: unknown[] }>(app, '/api/backend/admin/list', {
+            const json = await apiGet<{ list: Array<Record<string, unknown>> }>(app, '/api/backend/admin/list', {
                 cookie: adminCookie(),
                 query: { page: 1, limit: 10 },
             })
             expect(json.code).toBe(200)
             expect(Array.isArray(json.data!.list)).toBe(true)
+            expect(json.data!.list.every(item => !('password' in item))).toBe(true)
         })
 
         it('GET /admin/item 成功', async () => {
-            const json = await apiGet<{ id: string }>(app, '/api/backend/admin/item', {
+            const json = await apiGet<{ id: string, password?: string }>(app, '/api/backend/admin/item', {
                 cookie: adminCookie(),
                 query: { id: FIXTURES.admin.id },
             })
             expect(json.code).toBe(200)
             expect(json.data!.id).toBe(FIXTURES.admin.id)
+            expect(json.data!.password).toBeUndefined()
         })
 
         it('POST /admin/modify 成功', async () => {
-            const json = await apiPost<{ id: string }>(app, '/api/backend/admin/modify', {
+            const json = await apiPost<{ id: string, password?: string }>(app, '/api/backend/admin/modify', {
                 id: FIXTURES.adminOther.id,
                 username: FIXTURES.adminOther.username,
                 email: 'admin2-updated@test.com',
@@ -301,6 +330,7 @@ describe('API /api/backend', () => {
             })
             expect(json.code).toBe(200)
             expect(json.data!.id).toBe(FIXTURES.adminOther.id)
+            expect(json.data!.password).toBeUndefined()
 
             const row = await findAdmin(FIXTURES.adminOther.id)
             expect(row!.email).toBe('admin2-updated@test.com')
@@ -341,25 +371,27 @@ describe('API /api/backend', () => {
         })
 
         it('GET /user/list 成功', async () => {
-            const json = await apiGet<{ list: unknown[] }>(app, '/api/backend/user/list', {
+            const json = await apiGet<{ list: Array<Record<string, unknown>> }>(app, '/api/backend/user/list', {
                 cookie: adminCookie(),
                 query: { page: 1, limit: 10 },
             })
             expect(json.code).toBe(200)
             expect(Array.isArray(json.data!.list)).toBe(true)
+            expect(json.data!.list.every(item => !('password' in item))).toBe(true)
         })
 
         it('GET /user/item 成功', async () => {
-            const json = await apiGet<{ id: string }>(app, '/api/backend/user/item', {
+            const json = await apiGet<{ id: string, password?: string }>(app, '/api/backend/user/item', {
                 cookie: adminCookie(),
                 query: { id: FIXTURES.user.id },
             })
             expect(json.code).toBe(200)
             expect(json.data!.id).toBe(FIXTURES.user.id)
+            expect(json.data!.password).toBeUndefined()
         })
 
         it('POST /user/modify 成功', async () => {
-            const json = await apiPost<{ id: string }>(app, '/api/backend/user/modify', {
+            const json = await apiPost<{ id: string, password?: string }>(app, '/api/backend/user/modify', {
                 id: FIXTURES.userOther.id,
                 username: FIXTURES.userOther.username,
                 email: 'user2-updated@test.com',
@@ -369,6 +401,7 @@ describe('API /api/backend', () => {
             })
             expect(json.code).toBe(200)
             expect(json.data!.id).toBe(FIXTURES.userOther.id)
+            expect(json.data!.password).toBeUndefined()
 
             const row = await findUser(FIXTURES.userOther.id)
             expect(row!.email).toBe('user2-updated@test.com')

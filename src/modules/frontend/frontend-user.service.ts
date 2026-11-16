@@ -1,7 +1,7 @@
 import type { OtherPage, UserInsert, UserLogin, UserModify, UserModifyForm, UserPassword } from '~/schema/elysia-schema'
 
 import { strLen } from '@lincy/utils'
-import { and, count, desc, eq } from 'drizzle-orm'
+import { and, count, desc, eq, ne } from 'drizzle-orm'
 import md5 from 'md5'
 
 import { config } from '~/config'
@@ -9,9 +9,11 @@ import { db, users } from '~/db'
 import { ApiError } from '~/plugins/response-wrapper'
 import { API_CODE } from '~/types/api-code'
 import { getErrorMessage, getNowTime } from '~/utils'
-import { withVirtualId } from '~/utils/db-mapper'
+import { withoutPassword, withVirtualId } from '~/utils/db-mapper'
 import { signSessionToken } from '~/utils/jwt-token'
-import { generateObjectId } from '~/utils/object-id'
+import { generateObjectId, isValidObjectId } from '~/utils/object-id'
+import { normalizePage } from '~/utils/page'
+import { throwAsApiError } from '~/utils/service-error'
 
 /**
  * 前台用户业务（Drizzle）。
@@ -21,9 +23,7 @@ export class FrontendUserService {
      * 用户列表。
      */
     public static async getList(reqQuery: OtherPage) {
-        const page = Number(reqQuery.page) || 1
-        const limit = Number(reqQuery.limit) || 10
-        const offset = (page - 1) * limit
+        const { page, limit, offset } = normalizePage(reqQuery.page, reqQuery.limit, 10)
 
         try {
             const [list, totalResult] = await Promise.all([
@@ -33,14 +33,14 @@ export class FrontendUserService {
             const total = Number(totalResult[0]?.value) ?? 0
             const totalPage = Math.ceil(total / limit)
             return {
-                list: list.map(withVirtualId),
+                list: list.map(row => withoutPassword(withVirtualId(row))),
                 total,
                 hasNext: totalPage > page ? 1 : 0,
                 hasPrev: page > 1 ? 1 : 0,
             }
         }
         catch (err: unknown) {
-            throw new ApiError(API_CODE.SERVER_ERROR, getErrorMessage(err))
+            throwAsApiError(err, '获取用户列表失败')
         }
     }
 
@@ -138,15 +138,18 @@ export class FrontendUserService {
      * 获取用户信息。
      */
     public static async getItem(userid: string) {
+        if (!userid || !isValidObjectId(userid)) {
+            throw new ApiError(API_CODE.VALIDATION, '参数错误')
+        }
+
         try {
-            const [result] = await db.select().from(users).where(and(eq(users._id, userid), eq(users.is_delete, 0))).limit(1)
-            if (result) {
-                return withVirtualId(result)
-            }
-            return '请先登录, 或者数据错误'
+            const [result] = await db.select().from(users).where(eq(users._id, userid)).limit(1)
+            if (!result)
+                throw new ApiError(API_CODE.VALIDATION, '用户不存在')
+            return withoutPassword(withVirtualId(result))
         }
         catch (err: unknown) {
-            throw new ApiError(API_CODE.SERVER_ERROR, getErrorMessage(err))
+            throwAsApiError(err, '获取用户详情失败')
         }
     }
 
@@ -155,6 +158,10 @@ export class FrontendUserService {
      */
     public static async modify(reqBody: UserModify) {
         const { id, email, password, username } = reqBody
+
+        if (!id || !isValidObjectId(id)) {
+            throw new ApiError(API_CODE.VALIDATION, '参数错误')
+        }
 
         const body: UserModifyForm = {
             email,
@@ -166,11 +173,20 @@ export class FrontendUserService {
         }
 
         try {
+            const [duplicate] = await db.select({ _id: users._id })
+                .from(users)
+                .where(and(eq(users.username, username), ne(users._id, id)))
+                .limit(1)
+            if (duplicate)
+                throw new ApiError(API_CODE.VALIDATION, '该用户名已经存在')
+
             const [result] = await db.update(users).set(body).where(eq(users._id, id)).returning()
-            return result ? withVirtualId(result) : null
+            if (!result)
+                throw new ApiError(API_CODE.VALIDATION, '用户不存在')
+            return withoutPassword(withVirtualId(result))
         }
         catch (err: unknown) {
-            throw new ApiError(API_CODE.SERVER_ERROR, getErrorMessage(err))
+            throwAsApiError(err, '修改用户失败')
         }
     }
 
@@ -273,12 +289,18 @@ export class FrontendUserService {
     public static async deletes(reqQuery: { id: string }) {
         const { id: _id } = reqQuery
 
+        if (!_id || !isValidObjectId(_id)) {
+            throw new ApiError(API_CODE.VALIDATION, '参数错误')
+        }
+
         try {
-            await db.update(users).set({ is_delete: 1 }).where(eq(users._id, _id))
-            return '删除功能'
+            const [updated] = await db.update(users).set({ is_delete: 1 }).where(eq(users._id, _id)).returning()
+            if (!updated)
+                throw new ApiError(API_CODE.VALIDATION, '用户不存在')
+            return '删除成功'
         }
         catch (err: unknown) {
-            throw new ApiError(API_CODE.SERVER_ERROR, getErrorMessage(err))
+            throwAsApiError(err, '删除用户失败')
         }
     }
 
@@ -288,12 +310,18 @@ export class FrontendUserService {
     public static async recover(reqQuery: { id: string }) {
         const { id: _id } = reqQuery
 
+        if (!_id || !isValidObjectId(_id)) {
+            throw new ApiError(API_CODE.VALIDATION, '参数错误')
+        }
+
         try {
-            await db.update(users).set({ is_delete: 0 }).where(eq(users._id, _id))
+            const [updated] = await db.update(users).set({ is_delete: 0 }).where(eq(users._id, _id)).returning()
+            if (!updated)
+                throw new ApiError(API_CODE.VALIDATION, '用户不存在')
             return '恢复成功'
         }
         catch (err: unknown) {
-            throw new ApiError(API_CODE.SERVER_ERROR, getErrorMessage(err))
+            throwAsApiError(err, '恢复用户失败')
         }
     }
 }

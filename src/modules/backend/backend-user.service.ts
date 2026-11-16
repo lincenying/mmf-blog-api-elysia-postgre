@@ -1,29 +1,30 @@
 import type { OtherPage, UserInsert, UserLogin, UserModify, UserModifyForm } from '~/schema/elysia-schema'
 
-import { writeFileSync } from 'fs'
-import { count, desc, eq } from 'drizzle-orm'
+import { writeFile } from 'fs/promises'
+import { and, count, desc, eq, ne } from 'drizzle-orm'
 import md5 from 'md5'
 
 import { config } from '~/config'
 import { admins, db } from '~/db'
 import { ApiError } from '~/plugins/response-wrapper'
 import { API_CODE } from '~/types/api-code'
-import { fsExistsSync, getErrorMessage, getNowTime } from '~/utils'
-import { withVirtualId } from '~/utils/db-mapper'
+import { fsExistsSync, getNowTime } from '~/utils'
+import { withoutPassword, withVirtualId } from '~/utils/db-mapper'
 import { signSessionToken } from '~/utils/jwt-token'
+import { logger } from '~/utils/logger'
 import { generateObjectId, isValidObjectId } from '~/utils/object-id'
+import { normalizePage } from '~/utils/page'
+import { throwAsApiError } from '~/utils/service-error'
 
 /**
  * 后台管理员账号业务（Drizzle）。
  */
 export class BackendUserService {
     /**
-     * 获取管理员列表。
+     * 获取管理员列表。响应不含密码。
      */
     public static async getList(reqQuery: OtherPage) {
-        const page = Number(reqQuery.page) || 1
-        const limit = Number(reqQuery.limit) || 10
-        const offset = (page - 1) * limit
+        const { page, limit, offset } = normalizePage(reqQuery.page, reqQuery.limit, 10)
         try {
             const [list, totalResult] = await Promise.all([
                 db.select().from(admins).orderBy(desc(admins._id)).limit(limit).offset(offset),
@@ -32,19 +33,19 @@ export class BackendUserService {
             const total = Number(totalResult[0]?.value) ?? 0
             const totalPage = Math.ceil(total / limit)
             return {
-                list: list.map(withVirtualId),
+                list: list.map(row => withoutPassword(withVirtualId(row))),
                 total,
                 hasNext: totalPage > page ? 1 : 0,
                 hasPrev: page > 1 ? 1 : 0,
             }
         }
         catch (err: unknown) {
-            throw new ApiError(API_CODE.SERVER_ERROR, getErrorMessage(err))
+            throwAsApiError(err, '获取管理员列表失败')
         }
     }
 
     /**
-     * 获取单个管理员。
+     * 获取单个管理员。响应不含密码。
      */
     public static async getItem(reqQuery: { id: string }) {
         const { id: _id } = reqQuery
@@ -55,10 +56,10 @@ export class BackendUserService {
 
         try {
             const [result] = await db.select().from(admins).where(eq(admins._id, _id)).limit(1)
-            return result ? withVirtualId(result) : null
+            return result ? withoutPassword(withVirtualId(result)) : null
         }
         catch (err: unknown) {
-            throw new ApiError(API_CODE.SERVER_ERROR, getErrorMessage(err))
+            throwAsApiError(err, '获取管理员详情失败')
         }
     }
 
@@ -93,10 +94,7 @@ export class BackendUserService {
             throw new ApiError(API_CODE.VALIDATION, '用户名或者密码错误')
         }
         catch (err: unknown) {
-            if (err instanceof ApiError) {
-                throw err
-            }
-            throw new ApiError(API_CODE.SERVER_ERROR, getErrorMessage(err))
+            throwAsApiError(err, '管理员登录失败')
         }
     }
 
@@ -137,21 +135,26 @@ export class BackendUserService {
                     timestamp: Number(getNowTime('X')),
                 }
                 await db.insert(admins).values(data)
-                writeFileSync('./admin.lock', username)
-                message = `添加用户成功: ${username}, 密码: ${password}`
+                await writeFile('./admin.lock', username)
+                message = `添加用户成功: ${username}`
             }
         }
         catch (err: unknown) {
-            message = getErrorMessage(err)
+            logger.error({ err }, '初始化管理员失败')
+            message = '添加管理员失败'
         }
         return message
     }
 
     /**
-     * 管理员编辑。
+     * 管理员编辑。响应不含密码。
      */
     public static async modify(reqBody: UserModify) {
         const { id: _id, email, password, username } = reqBody
+
+        if (!_id || !isValidObjectId(_id)) {
+            throw new ApiError(API_CODE.VALIDATION, '参数错误')
+        }
 
         const body: UserModifyForm = {
             email,
@@ -163,11 +166,20 @@ export class BackendUserService {
         }
 
         try {
+            const [duplicate] = await db.select({ _id: admins._id })
+                .from(admins)
+                .where(and(eq(admins.username, username), ne(admins._id, _id)))
+                .limit(1)
+            if (duplicate)
+                throw new ApiError(API_CODE.VALIDATION, '该用户名已经存在')
+
             const [result] = await db.update(admins).set(body).where(eq(admins._id, _id)).returning()
-            return result ? withVirtualId(result) : null
+            if (!result)
+                throw new ApiError(API_CODE.VALIDATION, '管理员不存在')
+            return withoutPassword(withVirtualId(result))
         }
         catch (err: unknown) {
-            throw new ApiError(API_CODE.SERVER_ERROR, getErrorMessage(err))
+            throwAsApiError(err, '修改管理员失败')
         }
     }
 
@@ -177,12 +189,18 @@ export class BackendUserService {
     public static async deletes(reqQuery: { id: string }) {
         const { id: _id } = reqQuery
 
+        if (!_id || !isValidObjectId(_id)) {
+            throw new ApiError(API_CODE.VALIDATION, '参数错误')
+        }
+
         try {
-            await db.update(admins).set({ is_delete: 1 }).where(eq(admins._id, _id))
+            const [updated] = await db.update(admins).set({ is_delete: 1 }).where(eq(admins._id, _id)).returning()
+            if (!updated)
+                throw new ApiError(API_CODE.VALIDATION, '管理员不存在')
             return '删除成功'
         }
         catch (err: unknown) {
-            throw new ApiError(API_CODE.SERVER_ERROR, getErrorMessage(err))
+            throwAsApiError(err, '删除管理员失败')
         }
     }
 
@@ -192,12 +210,18 @@ export class BackendUserService {
     public static async recover(reqQuery: { id: string }) {
         const { id: _id } = reqQuery
 
+        if (!_id || !isValidObjectId(_id)) {
+            throw new ApiError(API_CODE.VALIDATION, '参数错误')
+        }
+
         try {
-            await db.update(admins).set({ is_delete: 0 }).where(eq(admins._id, _id))
+            const [updated] = await db.update(admins).set({ is_delete: 0 }).where(eq(admins._id, _id)).returning()
+            if (!updated)
+                throw new ApiError(API_CODE.VALIDATION, '管理员不存在')
             return '恢复成功'
         }
         catch (err: unknown) {
-            throw new ApiError(API_CODE.SERVER_ERROR, getErrorMessage(err))
+            throwAsApiError(err, '恢复管理员失败')
         }
     }
 }
