@@ -39,9 +39,21 @@ export const articleSearchSchema = t.Partial(
         id: t.String(),
         key: t.String(),
         filter: t.String(),
+        page: t.String(),
+        limit: t.String(),
     }),
 )
 export type ArticleSearch = typeof articleSearchSchema.static
+
+export const commentListSchema = t.Object({
+    id: tt.String('文章ID', {
+        minLength: 24,
+        maxLength: 24,
+    }),
+    page: t.Optional(t.String()),
+    limit: t.Optional(t.String()),
+})
+export type CommentListQuery = typeof commentListSchema.static
 
 export const otherPageSchema = t.Partial(
     t.Object({
@@ -200,6 +212,7 @@ export const validationSchema = new Elysia()
         'id': idSchema,
         // 文章搜索条件
         'article.search': articleSearchSchema,
+        'comment.list': commentListSchema,
         'other.page': otherPageSchema,
 
         // 文章列表分页

@@ -53,6 +53,14 @@ describe('API /api/frontend', () => {
             expect(json.data!.list.some(item => item.id === FIXTURES.article.id)).toBe(true)
         })
 
+        it('GET /article/list 分页', async () => {
+            const json = await apiGet<{ list: unknown[] }>(app, '/api/frontend/article/list', {
+                query: { page: '1', limit: '1' },
+            })
+            expect(json.code).toBe(200)
+            expect(json.data!.list).toHaveLength(1)
+        })
+
         it('GET /article/item', async () => {
             const json = await apiGet<{ id: string }>(app, '/api/frontend/article/item', {
                 query: { id: FIXTURES.article.id },
@@ -148,7 +156,9 @@ describe('API /api/frontend', () => {
 
             const after = await findArticle(FIXTURES.article.id)
             expect(after!.comment_count).toBe(0)
-            expect(await findComment(FIXTURES.comment.id)).not.toBeNull()
+            const comment = await findComment(FIXTURES.comment.id)
+            expect(comment).not.toBeNull()
+            expect(comment!.is_delete).toBe(1)
         })
 
         it('GET /comment/recover 无 Cookie → 403', async () => {
@@ -175,6 +185,7 @@ describe('API /api/frontend', () => {
 
             const after = await findArticle(FIXTURES.article.id)
             expect(after!.comment_count).toBe(1)
+            expect((await findComment(FIXTURES.comment.id))!.is_delete).toBe(0)
         })
     })
 
@@ -209,6 +220,17 @@ describe('API /api/frontend', () => {
 
             const after = await findArticle(FIXTURES.article.id)
             expect(after!.comment_count).toBe(2)
+        })
+
+        it('POST /comment/insert 文章不存在', async () => {
+            const json = await apiPost(app, '/api/frontend/comment/insert', {
+                id: 'aaaaaaaaaaaaaaaaaaaaaaaa',
+                content: '新评论内容',
+            }, {
+                cookie: userCookie(),
+            })
+            expect(json.code).toBe(201)
+            expect((await findArticle(FIXTURES.article.id))!.comment_count).toBe(1)
         })
 
         it('GET /user/account 无 Cookie → 403', async () => {
@@ -327,13 +349,18 @@ describe('API /api/frontend', () => {
         })
 
         it('GET /reset/like 无 Cookie → 403', async () => {
+            const json = await apiGet(app, '/api/frontend/reset/like')
+            expect(json.code).toBe(403)
+        })
+
+        it('GET /reset/like 前台用户 → 403', async () => {
             const json = await apiGet(app, '/api/frontend/reset/like', {
-                query: { id: FIXTURES.article.id },
+                cookie: userCookie(),
             })
             expect(json.code).toBe(403)
         })
 
-        it('GET /reset/like 成功', async () => {
+        it('GET /reset/like 管理员成功', async () => {
             await apiGet(app, '/api/frontend/like', {
                 query: { id: FIXTURES.article.id },
                 cookie: userCookie(),
@@ -344,8 +371,7 @@ describe('API /api/frontend', () => {
             expect((await findArticle(FIXTURES.article.id))!.like).toBe(99)
 
             const json = await apiGet(app, '/api/frontend/reset/like', {
-                query: { id: FIXTURES.article.id },
-                cookie: userCookie(),
+                cookie: adminCookie(),
             })
             expect(json.code).toBe(200)
             expect(json.data).toBe('操作成功')

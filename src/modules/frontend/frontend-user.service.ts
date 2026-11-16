@@ -8,7 +8,7 @@ import { config } from '~/config'
 import { db, users } from '~/db'
 import { ApiError } from '~/plugins/response-wrapper'
 import { API_CODE } from '~/types/api-code'
-import { getErrorMessage, getNowTime } from '~/utils'
+import { getNowTime } from '~/utils'
 import { withoutPassword, withVirtualId } from '~/utils/db-mapper'
 import { signSessionToken } from '~/utils/jwt-token'
 import { generateObjectId, isValidObjectId } from '~/utils/object-id'
@@ -77,10 +77,7 @@ export class FrontendUserService {
             throw new ApiError(API_CODE.VALIDATION, '用户名或者密码错误')
         }
         catch (err: unknown) {
-            if (err instanceof ApiError) {
-                throw err
-            }
-            throw new ApiError(API_CODE.SERVER_ERROR, getErrorMessage(err))
+            throwAsApiError(err, '用户登录失败')
         }
     }
 
@@ -126,10 +123,7 @@ export class FrontendUserService {
                 return '注册成功!'
             }
             catch (err: unknown) {
-                if (err instanceof ApiError) {
-                    throw err
-                }
-                throw new ApiError(API_CODE.SERVER_ERROR, getErrorMessage(err))
+                throwAsApiError(err, '用户注册失败')
             }
         }
     }
@@ -222,10 +216,7 @@ export class FrontendUserService {
             }
         }
         catch (err: unknown) {
-            if (err instanceof ApiError) {
-                throw err
-            }
-            throw new ApiError(API_CODE.SERVER_ERROR, getErrorMessage(err))
+            throwAsApiError(err, '获取用户资料失败')
         }
     }
 
@@ -240,11 +231,19 @@ export class FrontendUserService {
         const { email } = reqBody
 
         try {
-            await db.update(users).set({ email }).where(eq(users._id, user_id))
-            return { email }
+            const [updated] = await db.update(users)
+                .set({
+                    email,
+                    update_date: getNowTime(),
+                })
+                .where(and(eq(users._id, user_id), eq(users.is_delete, 0)))
+                .returning({ email: users.email })
+            if (!updated)
+                throw new ApiError(API_CODE.VALIDATION, '请先登录, 或者数据错误')
+            return { email: updated.email }
         }
         catch (err: unknown) {
-            throw new ApiError(API_CODE.SERVER_ERROR, getErrorMessage(err))
+            throwAsApiError(err, '修改用户资料失败')
         }
     }
 
@@ -258,6 +257,9 @@ export class FrontendUserService {
 
         const { old_password, password } = reqBody
 
+        if (strLen(password) < 8)
+            throw new ApiError(API_CODE.VALIDATION, '密码长度至少 8 位')
+
         try {
             const [result] = await db.select().from(users).where(
                 and(
@@ -269,17 +271,17 @@ export class FrontendUserService {
 
             if (result) {
                 await db.update(users)
-                    .set({ password: md5(config.md5_salt + password) })
+                    .set({
+                        password: md5(config.md5_salt + password),
+                        update_date: getNowTime(),
+                    })
                     .where(eq(users._id, user_id))
                 return 'success'
             }
             throw new ApiError(API_CODE.VALIDATION, '原始密码错误')
         }
         catch (err: unknown) {
-            if (err instanceof ApiError) {
-                throw err
-            }
-            throw new ApiError(API_CODE.SERVER_ERROR, getErrorMessage(err))
+            throwAsApiError(err, '修改密码失败')
         }
     }
 

@@ -1,37 +1,38 @@
-import type { Article, TrendingData } from '~/types/article.types'
-import type { ReqListQuery } from '~/types/global.types'
+import type { ArticleSearch } from '~/schema/elysia-schema'
+import type { Article } from '~/types/article.types'
 
-import { and, count, desc, eq, type SQL } from 'drizzle-orm'
+import { and, count, desc, eq, ne, type SQL } from 'drizzle-orm'
 
 import { articleLikes, articles, db } from '~/db'
 import { ApiError } from '~/plugins/response-wrapper'
 import { API_CODE } from '~/types/api-code'
-import { getErrorMessage } from '~/utils'
 import { withVirtualId } from '~/utils/db-mapper'
 import { buildOrderBy, ilikeColumn, increment } from '~/utils/drizzle-helpers'
+import { replaceHtmlTag } from '~/utils/html-text'
 import { isValidObjectId } from '~/utils/object-id'
+import { normalizePage } from '~/utils/page'
+import { throwAsApiError } from '~/utils/service-error'
 
-function replaceHtmlTag(html: string) {
-    return html
-        .replace(/<script(.*?)>/gi, '＜script$1＞')
-        .replace(/<\/script>/g, '＜/script＞')
-        .replace(/\$'/g, '$ \'')
-        .replace(/\$`/g, '$ `')
-}
-
-function removeFields(fields: string, filter: string) {
-    const fieldsArray = fields.split(' ')
-    const filterArray = filter.split(',')
-    const filteredFields = fieldsArray.filter(field => !filterArray.includes(field))
-    return filteredFields.join(' ')
-}
+/** 前台文章列表允许的排序字段。 */
+const ARTICLE_SORT_FIELDS = new Set(['update_date', 'creat_date', 'visit', 'like', 'comment_count', 'timestamp'])
 
 /**
  * 查询用户已点赞的文章 ID 集合。
  */
 async function getUserLikedArticleIds(userId: string): Promise<Set<string>> {
     const rows = await db.select({ article_id: articleLikes.article_id }).from(articleLikes).where(eq(articleLikes.user_id, userId))
-    return new Set(rows.map(r => r.article_id))
+    return new Set(rows.map(row => row.article_id))
+}
+
+/**
+ * 查询用户是否点赞了指定文章。
+ */
+async function hasUserLikedArticle(userId: string, articleId: string) {
+    const [row] = await db.select({ article_id: articleLikes.article_id })
+        .from(articleLikes)
+        .where(and(eq(articleLikes.user_id, userId), eq(articleLikes.article_id, articleId)))
+        .limit(1)
+    return !!row
 }
 
 /**
@@ -41,32 +42,17 @@ export class FrontendArticleService {
     /**
      * 前台浏览时，获取文章列表。
      */
-    public static async getList(reqQuery: ReqListQuery, user_id?: string) {
-        const { by, id, key, filter } = reqQuery
-
-        const page = Number(reqQuery.page) || 1
-        const limit = Number(reqQuery.limit) || 10
-        const offset = (page - 1) * limit
+    public static async getList(reqQuery: ArticleSearch, user_id?: string) {
+        const { by, id, key } = reqQuery
+        const { page, limit, offset } = normalizePage(reqQuery.page, reqQuery.limit, 10)
 
         const conditions: SQL[] = [eq(articles.is_delete, 0)]
-        if (id) {
+        if (id && isValidObjectId(id))
             conditions.push(eq(articles.category, id))
-        }
-        if (key) {
+        if (key)
             conditions.push(ilikeColumn(articles.title, key))
-        }
         const whereClause = and(...conditions)
-
-        let sort = '-update_date'
-        if (by) {
-            sort = `-${by}`
-        }
-
-        let filds = 'title content category category_name visit like likes comment_count creat_date update_date is_delete timestamp' // 列表不返回 html
-        if (filter) {
-            filds = removeFields(filds, filter)
-        }
-        void filds
+        const sortField = by && ARTICLE_SORT_FIELDS.has(by) ? by : 'update_date'
 
         try {
             const likedSet = user_id ? await getUserLikedArticleIds(user_id) : new Set<string>()
@@ -86,7 +72,7 @@ export class FrontendArticleService {
                     update_date: articles.update_date,
                     is_delete: articles.is_delete,
                     timestamp: articles.timestamp,
-                }).from(articles).where(whereClause).orderBy(buildOrderBy(articles, sort)).limit(limit).offset(offset),
+                }).from(articles).where(whereClause).orderBy(buildOrderBy(articles, `-${sortField}`)).limit(limit).offset(offset),
                 db.select({ value: count() }).from(articles).where(whereClause),
             ])
             const total = Number(totalResult[0]?.value) ?? 0
@@ -110,71 +96,59 @@ export class FrontendArticleService {
             }
         }
         catch (err: unknown) {
-            throw new ApiError(API_CODE.SERVER_ERROR, getErrorMessage(err))
+            throwAsApiError(err, '获取文章列表失败')
         }
     }
 
     /**
-     * 前台浏览时，获取单篇文章。
+     * 前台浏览时，获取单篇文章，并增加访问数。
      */
-    public static async getItem(reqQuery: { id: string }, user_id: Nullable<string>) {
+    public static async getItem(reqQuery: { id: string }, user_id: string) {
         const { id: _id } = reqQuery
 
-        if (!_id || !isValidObjectId(_id)) {
+        if (!_id || !isValidObjectId(_id))
             throw new ApiError(API_CODE.VALIDATION, '参数错误')
-        }
 
         try {
             const [result] = await db.select().from(articles).where(and(eq(articles._id, _id), eq(articles.is_delete, 0))).limit(1)
 
-            if (!result) {
+            if (!result)
                 throw new ApiError(API_CODE.VALIDATION, '没有找到该文章')
-            }
 
             await db.update(articles)
                 .set({ visit: increment(articles.visit) })
                 .where(eq(articles._id, _id))
 
-            const likedSet = user_id ? await getUserLikedArticleIds(user_id) : new Set<string>()
             const mapped = withVirtualId({ ...result, likes: [] as string[], timestamp: result.timestamp ?? 0 }) as Article
-            mapped.like_status = user_id ? likedSet.has(_id) : false
+            mapped.visit = (result.visit ?? 0) + 1
+            mapped.like_status = user_id ? await hasUserLikedArticle(user_id, _id) : false
             mapped.likes = []
             mapped.content = replaceHtmlTag(mapped.content)
             mapped.html = replaceHtmlTag(mapped.html)
             return mapped
         }
         catch (err: unknown) {
-            if (err instanceof ApiError) {
-                throw err
-            }
-            throw new ApiError(API_CODE.SERVER_ERROR, getErrorMessage(err))
+            throwAsApiError(err, '获取文章详情失败')
         }
     }
 
     /**
-     * 前台浏览时，获取文章推荐列表。
+     * 前台浏览时，获取文章推荐列表。传入文章 ID 时排除该文，并优先返回同分类。
      */
     public static async getTrending(reqQuery: { id?: string }) {
         const id = reqQuery.id
 
         try {
-            let category: string | undefined
-            if (id) {
+            const conditions: SQL[] = [eq(articles.is_delete, 0)]
+            if (id && isValidObjectId(id)) {
+                conditions.push(ne(articles._id, id))
                 const [article] = await db.select({ category: articles.category })
                     .from(articles)
                     .where(and(eq(articles._id, id), eq(articles.is_delete, 0)))
                     .limit(1)
-                category = article?.category
+                if (article?.category)
+                    conditions.push(eq(articles.category, article.category))
             }
-
-            const limit = 5
-            const conditions: SQL[] = [eq(articles.is_delete, 0)]
-            if (category) {
-                conditions.push(eq(articles.category, category))
-            }
-            const data: TrendingData = { is_delete: 0, category }
-
-            void data
 
             const result = await db.select({
                 _id: articles._id,
@@ -186,14 +160,14 @@ export class FrontendArticleService {
                 .from(articles)
                 .where(and(...conditions))
                 .orderBy(desc(articles.visit))
-                .limit(limit)
+                .limit(5)
 
             return {
                 list: result.map(row => withVirtualId({ ...row, likes: [] })),
             }
         }
         catch (err: unknown) {
-            throw new ApiError(API_CODE.SERVER_ERROR, getErrorMessage(err))
+            throwAsApiError(err, '获取推荐文章失败')
         }
     }
 }

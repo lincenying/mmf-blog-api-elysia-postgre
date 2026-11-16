@@ -32,7 +32,7 @@ export const frontendRouter = new Elysia({ prefix: '/api/frontend' })
     .get('/comment/list', async ({ query }) => {
         return await FrontendCommentService.getList(query)
     }, {
-        query: 'id',
+        query: 'comment.list',
     })
     .post('/user/insert', async ({ body }) => {
         return await FrontendUserService.insert(body)
@@ -62,6 +62,9 @@ export const frontendRouter = new Elysia({ prefix: '/api/frontend' })
             return await FrontendCommentService.recover(query)
         }, {
             query: 'id',
+        })
+        .get('/reset/like', async () => {
+            return await FrontendLikeService.resetLike()
         }))
     .guard({
         beforeHandle: assertUserAuth,
@@ -91,11 +94,6 @@ export const frontendRouter = new Elysia({ prefix: '/api/frontend' })
         })
         .get('/unlike', async ({ query, cookie }) => {
             return await FrontendLikeService.unlike(query, cookieValue(cookie.userid.value))
-        }, {
-            query: 'id',
-        })
-        .get('/reset/like', async () => {
-            return await FrontendLikeService.resetLike()
         }, {
             query: 'id',
         }))
