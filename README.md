@@ -182,13 +182,13 @@ interface IApiResponse<T = unknown> {
 ### 仅 API 镜像
 
 ```bash
-docker build -t lincenying/api-bun-postgre:1.26.1112 -f ./Dockerfile .
+docker build -t lincenying/api-bun-postgre:1.26.1116 -f ./Dockerfile .
 docker run -d \
   -p 4000:4000 \
   --env-file .env \
   --env-file .env.production \
   --name container-api-bun-postgre \
-  lincenying/api-bun-postgre:1.26.1112
+  lincenying/api-bun-postgre:1.26.1116
 ```
 
 镜像内默认 `NODE_ENV=production`，监听 **4000**（见 `config/production.yaml`）。生产环境需配置 PostgreSQL 连接参数。
