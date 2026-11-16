@@ -1,5 +1,19 @@
 # 变更记录
 
+## 2026-11-16 11:10:17
+
+- **修复**：会话 Cookie 不再设置 `Secure`，HTTP 测试环境可以正常写入。
+
+---
+
+**本次改动建议的 commit message（未自动提交）：**
+
+```
+fix: 会话 Cookie 不再携带 Secure
+```
+
+---
+
 ## 2026-11-16 10:42:06
 
 - **安全**：会话 Cookie 增加 `HttpOnly`、`SameSite=Strict`，生产环境再加 `Secure`。鉴权改为 Cookie 优先、同名请求头兜底。配置打印会隐藏数据库密码和 MD5 盐。

@@ -26,7 +26,7 @@ export interface IUserSession {
 }
 
 /**
- * 写入一枚会话 Cookie。生产环境附加 Secure，避免明文 HTTP 下浏览器丢弃开发环境的登录态。
+ * 写入一枚会话 Cookie。不设置 Secure，HTTP 测试环境也能写入。
  */
 function writeSessionCookie(field: ICookieField | undefined, value: string, maxAge: number): void {
     if (!field)
@@ -37,7 +37,7 @@ function writeSessionCookie(field: ICookieField | undefined, value: string, maxA
     field.path = '/'
     field.httpOnly = true
     field.sameSite = 'strict'
-    field.secure = config.server.nodeEnv === 'production'
+    field.secure = false
 }
 
 /**
@@ -67,7 +67,7 @@ function expireCookie(field: ICookieField | undefined): void {
     field.expires = new Date(0)
     field.httpOnly = true
     field.sameSite = 'strict'
-    field.secure = config.server.nodeEnv === 'production'
+    field.secure = false
 }
 
 /**
