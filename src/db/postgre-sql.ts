@@ -2,11 +2,8 @@ import { drizzle } from 'drizzle-orm/node-postgres'
 import { Pool } from 'pg'
 import { config } from '~/config'
 import * as schema from '~/db/schema/postgre'
+import { postgresClientConfig } from '~/db/utils/postgres-client'
 
-const { postgre_user, postgre_password, postgre_host, postgre_port, postgre_db } = config.db
-
-export const pool = new Pool({
-    connectionString: `postgresql://${postgre_user}:${postgre_password}@${postgre_host}:${postgre_port}/${postgre_db}`,
-})
+export const pool = new Pool(postgresClientConfig(config.db.postgre_db))
 
 export const db = drizzle(pool, { schema })

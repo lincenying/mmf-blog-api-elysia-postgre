@@ -10,6 +10,7 @@ interface INamedCookie {
 }
 
 interface IAdminAuthContext {
+    request: Request
     cookie: {
         b_user?: INamedCookie
         b_userid?: INamedCookie
@@ -18,6 +19,7 @@ interface IAdminAuthContext {
 }
 
 interface IUserAuthContext {
+    request: Request
     cookie: {
         user?: INamedCookie
         userid?: INamedCookie
@@ -26,14 +28,25 @@ interface IUserAuthContext {
 }
 
 /**
- * 校验后台管理员 Cookie JWT。失败抛出 403。
+ * Cookie 有值时用 Cookie，否则读取同名请求头，供 App 端携带登录响应里的凭证。
+ */
+function credential(fromCookie: unknown, request: Request, name: string): string {
+    const cookieText = cookieValue(fromCookie)
+    if (cookieText)
+        return cookieText
+
+    return request.headers.get(name)?.trim() ?? ''
+}
+
+/**
+ * 校验后台管理员会话。Cookie 优先，同名请求头兜底。失败抛出 403。
  */
 export function assertAdminAuth(context: IAdminAuthContext): void {
     const { b_user, b_userid, b_username } = context.cookie
     const check = checkJWT(
-        cookieValue(b_user?.value),
-        cookieValue(b_userid?.value),
-        cookieValue(b_username?.value),
+        credential(b_user?.value, context.request, 'b_user'),
+        credential(b_userid?.value, context.request, 'b_userid'),
+        credential(b_username?.value, context.request, 'b_username'),
         'admin',
     )
     if (!check) {
@@ -42,14 +55,14 @@ export function assertAdminAuth(context: IAdminAuthContext): void {
 }
 
 /**
- * 校验前台用户 Cookie JWT。失败抛出 403。
+ * 校验前台用户会话。Cookie 优先，同名请求头兜底。失败抛出 403。
  */
 export function assertUserAuth(context: IUserAuthContext): void {
     const { user, userid, username } = context.cookie
     const check = checkJWT(
-        cookieValue(user?.value),
-        cookieValue(userid?.value),
-        cookieValue(username?.value),
+        credential(user?.value, context.request, 'user'),
+        credential(userid?.value, context.request, 'userid'),
+        credential(username?.value, context.request, 'username'),
         'user',
     )
     if (!check) {

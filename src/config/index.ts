@@ -6,6 +6,7 @@
  * 支持 JSON、YAML、TOML 格式的配置文件
  */
 
+import { existsSync } from 'node:fs'
 import convict from 'convict'
 import * as yaml from 'js-yaml'
 import * as toml from 'toml'
@@ -41,18 +42,41 @@ const configFiles = [
     './config/default.toml',
 ]
 
-// 尝试加载配置文件
+const SENSITIVE_CONFIG_KEYS = new Set(['postgre_password', 'md5_salt'])
+
+/**
+ * 打印配置前去掉密码和盐值。
+ */
+function redactConfig(value: unknown): unknown {
+    if (Array.isArray(value))
+        return value.map(item => redactConfig(item))
+
+    if (!value || typeof value !== 'object')
+        return value
+
+    return Object.fromEntries(
+        Object.entries(value).map(([key, item]) => [
+            key,
+            SENSITIVE_CONFIG_KEYS.has(key) ? '***' : redactConfig(item),
+        ]),
+    )
+}
+
+// 尝试加载配置文件。不存在则跳过；存在但解析失败则停止，避免静默用错配置。
 let configLoaded = false
 for (const configFile of configFiles) {
+    if (!existsSync(configFile))
+        continue
+
     try {
         configInstance.loadFile(configFile)
         console.log(`✅ 成功加载配置文件: ${configFile}`)
         configLoaded = true
         break
     }
-    catch {
-        // 文件不存在或格式错误，继续尝试下一个
-        continue
+    catch (error) {
+        console.error(`❌ 配置文件解析失败: ${configFile}`, error)
+        process.exit(1)
     }
 }
 
@@ -75,4 +99,4 @@ console.log('✅ 配置验证成功')
 export const config = configInstance.getProperties()
 
 // 打印配置加载结果
-console.log('📦 配置加载完成：\n', JSON.parse(configInstance.toString()))
+console.log('📦 配置加载完成：\n', redactConfig(JSON.parse(configInstance.toString())))

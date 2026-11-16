@@ -40,7 +40,7 @@ export const accessLoggerMiddleware = new Elysia({ name: 'access-logger' })
                     {
                         requestId,
                         method: request.method,
-                        url: request.url,
+                        path: new URL(request.url).pathname,
                         userAgent,
                         contentType,
                         startTime: new Date(startTime).toISOString(),
@@ -67,7 +67,7 @@ export const accessLoggerMiddleware = new Elysia({ name: 'access-logger' })
                 {
                     requestId,
                     method: request.method,
-                    url: request.url,
+                    path: new URL(request.url).pathname,
                     status,
                     duration,
                     // contentLength: set.headers?.['content-length'] ?? '未知',
@@ -90,7 +90,7 @@ export const accessLoggerMiddleware = new Elysia({ name: 'access-logger' })
             {
                 requestId,
                 method: request.method,
-                url: request.url,
+                path: new URL(request.url).pathname,
                 error: errorMessage,
                 duration,
                 stack: errorStack,

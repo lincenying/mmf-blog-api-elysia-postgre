@@ -1,6 +1,7 @@
 import { beforeAll, beforeEach, describe, expect, it } from 'bun:test'
 
 import {
+    adminAuthHeaders,
     adminCookie,
     apiGet,
     apiPost,
@@ -72,6 +73,8 @@ describe('API /api/backend', () => {
                 expect(header).toBeDefined()
                 expect(header).toContain('Max-Age=0')
                 expect(header).toContain('Path=/')
+                expect(header).toContain('HttpOnly')
+                expect(header).toContain('SameSite=Strict')
             }
         })
     })
@@ -80,6 +83,22 @@ describe('API /api/backend', () => {
         it('GET /article/list 无 Cookie → 403', async () => {
             const json = await apiGet(app, '/api/backend/article/list')
             expect(json.code).toBe(403)
+        })
+
+        it('GET /article/list 请求头凭证可代替 Cookie', async () => {
+            const json = await apiGet<{ list: unknown[] }>(app, '/api/backend/article/list', {
+                headers: adminAuthHeaders(),
+                query: { page: '1', limit: '10' },
+            })
+            expect(json.code).toBe(200)
+        })
+
+        it('GET /article/list 非法排序字段仍返回列表', async () => {
+            const json = await apiGet<{ list: unknown[] }>(app, '/api/backend/article/list', {
+                cookie: adminCookie(),
+                query: { page: '1', limit: '10', sort: 'constructor' },
+            })
+            expect(json.code).toBe(200)
         })
 
         it('GET /article/list 成功', async () => {

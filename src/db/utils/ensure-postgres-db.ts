@@ -1,5 +1,6 @@
 import { Client } from 'pg'
 import { config } from '~/config'
+import { postgresClientConfig } from '~/db/utils/postgres-client'
 
 const DB_NAME_PATTERN = /^[a-z_]\w*$/i
 
@@ -7,21 +8,13 @@ const DB_NAME_PATTERN = /^[a-z_]\w*$/i
  * 目标库不存在时自动创建（连接默认库 postgres 执行）。
  */
 export async function ensurePostgresDatabase() {
-    const {
-        postgre_user,
-        postgre_password,
-        postgre_host,
-        postgre_port,
-        postgre_db,
-    } = config.db
+    const { postgre_db } = config.db
 
     if (!DB_NAME_PATTERN.test(postgre_db)) {
         throw new Error(`Invalid PostgreSQL database name: ${postgre_db}`)
     }
 
-    const client = new Client({
-        connectionString: `postgresql://${postgre_user}:${postgre_password}@${postgre_host}:${postgre_port}/postgres`,
-    })
+    const client = new Client(postgresClientConfig('postgres'))
 
     try {
         await client.connect()

@@ -6,6 +6,9 @@ export interface ICookieField {
     maxAge?: number
     path?: string
     expires?: Date
+    httpOnly?: boolean
+    secure?: boolean
+    sameSite?: boolean | 'strict' | 'lax' | 'none'
     remove?: () => void
 }
 
@@ -23,6 +26,21 @@ export interface IUserSession {
 }
 
 /**
+ * 写入一枚会话 Cookie。生产环境附加 Secure，避免明文 HTTP 下浏览器丢弃开发环境的登录态。
+ */
+function writeSessionCookie(field: ICookieField | undefined, value: string, maxAge: number): void {
+    if (!field)
+        return
+
+    field.value = value
+    field.maxAge = maxAge
+    field.path = '/'
+    field.httpOnly = true
+    field.sameSite = 'strict'
+    field.secure = config.server.nodeEnv === 'production'
+}
+
+/**
  * 写入后台管理员会话 Cookie（HttpOnly，有效期取自 config.jwt）。
  */
 export function applyAdminSessionCookies(
@@ -30,12 +48,9 @@ export function applyAdminSessionCookies(
     session: IAdminSession,
 ): void {
     const maxAge = config.jwt.expiresInSeconds
-    cookie.b_user!.value = session.user
-    cookie.b_userid!.value = session.userid
-    cookie.b_username!.value = session.username
-    cookie.b_user!.maxAge = maxAge
-    cookie.b_userid!.maxAge = maxAge
-    cookie.b_username!.maxAge = maxAge
+    writeSessionCookie(cookie.b_user, session.user, maxAge)
+    writeSessionCookie(cookie.b_userid, session.userid, maxAge)
+    writeSessionCookie(cookie.b_username, session.username, maxAge)
 }
 
 /**
@@ -50,6 +65,9 @@ function expireCookie(field: ICookieField | undefined): void {
     field.value = ''
     field.maxAge = 0
     field.expires = new Date(0)
+    field.httpOnly = true
+    field.sameSite = 'strict'
+    field.secure = config.server.nodeEnv === 'production'
 }
 
 /**
@@ -69,16 +87,11 @@ export function applyUserSessionCookies(
     session: IUserSession,
 ): void {
     const maxAge = config.jwt.expiresInSeconds
-    cookie.user!.value = session.user
-    cookie.userid!.value = session.userid
-    cookie.username!.value = session.username
-    if (session.useremail !== undefined) {
-        cookie.useremail!.value = session.useremail
-    }
-    cookie.user!.maxAge = maxAge
-    cookie.userid!.maxAge = maxAge
-    cookie.username!.maxAge = maxAge
-    cookie.useremail!.maxAge = maxAge
+    writeSessionCookie(cookie.user, session.user, maxAge)
+    writeSessionCookie(cookie.userid, session.userid, maxAge)
+    writeSessionCookie(cookie.username, session.username, maxAge)
+    if (session.useremail !== undefined)
+        writeSessionCookie(cookie.useremail, session.useremail, maxAge)
 }
 
 /**

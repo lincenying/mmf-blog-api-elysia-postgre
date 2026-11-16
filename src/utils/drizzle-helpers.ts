@@ -14,7 +14,17 @@ export function parseSortField(sort: string): { field: string, desc: boolean } {
 }
 
 /**
- * 根据字段名与排序方向构建 orderBy 子句。
+ * 只把 Drizzle 列交给 orderBy。表对象上的 constructor 等方法不能当排序字段。
+ */
+function isSqlColumn(value: unknown): value is AnyColumn {
+    return typeof value === 'object'
+        && value !== null
+        && 'name' in value
+        && 'table' in value
+}
+
+/**
+ * 根据字段名与排序方向构建 orderBy 子句。未知字段回退到默认列。
  */
 export function buildOrderBy<T extends object>(
     table: T,
@@ -23,11 +33,10 @@ export function buildOrderBy<T extends object>(
 ): SQL {
     const { field, desc: isDesc } = parseSortField(sort || `-${defaultField}`)
     const column = table[field as keyof T]
-    if (!column) {
-        const fallback = table[defaultField]
-        return isDesc ? desc(fallback as never) : asc(fallback as never)
-    }
-    return isDesc ? desc(column as never) : asc(column as never)
+    const fallback = table[defaultField]
+    const target = isSqlColumn(column) ? column : fallback
+    const descending = isSqlColumn(column) ? isDesc : true
+    return descending ? desc(target as AnyColumn) : asc(target as AnyColumn)
 }
 
 /**

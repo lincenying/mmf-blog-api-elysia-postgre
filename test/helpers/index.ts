@@ -1,5 +1,5 @@
 export { apiDelete, apiGet, apiPost, apiPut, apiRequest, createTestApp, type TestApp } from './app'
-export { adminAndUserCookie, adminCookie, userCookie } from './auth'
+export { adminAndUserCookie, adminAuthHeaders, adminCookie, userCookie } from './auth'
 export {
     countArticleLikes,
     findAdmin,

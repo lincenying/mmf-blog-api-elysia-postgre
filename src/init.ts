@@ -1,47 +1,50 @@
-import { accessSync, constants, mkdirSync, writeFileSync } from 'fs'
-import { getNowTime } from './utils'
+import { mkdirSync, writeFileSync } from 'node:fs'
 
-function fsExistsSync(path: string) {
-    try {
-        accessSync(path, constants.F_OK)
-    }
-    catch (_e) {
-        return false
-    }
-    return true
-}
-function creatSecret() {
-    if (!fsExistsSync('./src/config/_secret.js')) {
-        const secretServer1 = Math.random() * 1000000
-        const secretClient1 = Math.random() * 1000000
-        const secret1 = `
-            export const secretServer = '${secretServer1}'
-            export const secretClient = '${secretClient1}'
-        `
-        writeFileSync('./src/config/_secret.js', secret1)
-        console.log('./src/config/_secret.js: 生成成功')
-    }
-    else {
-        console.log('./src/config/_secret.js: 已存在, 自动跳过')
-    }
+import { fsExistsSync, getNowTime } from './utils'
+
+/**
+ * 生成 32 字节随机密钥，供 JWT 签名使用。
+ */
+function createRandomSecret(): string {
+    const bytes = new Uint8Array(32)
+    crypto.getRandomValues(bytes)
+    return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('')
 }
 
-function creatQiNiu() {
-    if (!fsExistsSync('./src/config/_qiniu.js')) {
-        const secret = `
-            export const accessKey = ''
-            export const secretKey = ''
-            export const bucket = ''
-        `
-        writeFileSync('./src/config/_qiniu.js', secret)
-        console.log('./src/config/_qiniu.js: 生成成功')
+/**
+ * 缺少 JWT 密钥文件时生成一份。已存在的文件不会覆盖。
+ */
+function createSecret() {
+    const filePath = './src/config/_secret.js'
+    if (fsExistsSync(filePath)) {
+        console.log(`${filePath}: 已存在, 自动跳过`)
+        return
     }
-    else {
-        console.log('./src/config/_qiniu.js: 已存在, 自动跳过')
-    }
+
+    const secret = `export const secretServer = '${createRandomSecret()}'\nexport const secretClient = '${createRandomSecret()}'\n`
+    writeFileSync(filePath, secret)
+    console.log(`${filePath}: 生成成功`)
 }
 
-function creatProjectFiles() {
+/**
+ * 缺少七牛配置模板时生成空模板。
+ */
+function createQiNiu() {
+    const filePath = './src/config/_qiniu.js'
+    if (fsExistsSync(filePath)) {
+        console.log(`${filePath}: 已存在, 自动跳过`)
+        return
+    }
+
+    const secret = `export const accessKey = ''\nexport const secretKey = ''\nexport const bucket = ''\n`
+    writeFileSync(filePath, secret)
+    console.log(`${filePath}: 生成成功`)
+}
+
+/**
+ * 补齐上传目录、本地环境文件和前端占位页。
+ */
+function createProjectFiles() {
     if (!fsExistsSync('./uploads')) {
         mkdirSync('./uploads', { recursive: true })
         console.log('./uploads: 生成成功')
@@ -83,6 +86,6 @@ POSTGRES_DIR=/var/lib/postgresql`
     }
 }
 
-creatSecret()
-creatQiNiu()
-creatProjectFiles()
+createSecret()
+createQiNiu()
+createProjectFiles()

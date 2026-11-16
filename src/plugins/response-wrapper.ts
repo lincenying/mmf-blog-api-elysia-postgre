@@ -2,6 +2,9 @@ import type { IApiResponse } from '~/types/global.types'
 
 import { Elysia } from 'elysia'
 
+import { API_CODE } from '~/types/api-code'
+import { logger } from '~/utils/logger'
+
 /**
  * API 错误类
  *
@@ -57,22 +60,30 @@ export const responseWrapperMiddleware = new Elysia({
         return successResponse
     })
     .onError(({ error, set, code }) => {
-        let errorMessage
-        let statusCode = 500
+        let errorMessage = '服务器内部错误'
+        let statusCode: number = API_CODE.SERVER_ERROR
 
         if (error instanceof ApiError) {
             errorMessage = error.message
             statusCode = error.code
         }
         else if (code === 'VALIDATION') {
-            console.log(error)
             errorMessage = formatValidationError(error)
+            statusCode = API_CODE.VALIDATION
+            logger.warn({ message: errorMessage }, '参数校验失败')
         }
-        else if (error instanceof Error) {
-            errorMessage = error.message
+        else if (code === 'NOT_FOUND') {
+            errorMessage = '接口不存在'
+            statusCode = API_CODE.NOT_FOUND
+        }
+        else if (code === 'PARSE') {
+            errorMessage = '请求格式错误'
+            statusCode = API_CODE.VALIDATION
         }
         else {
-            errorMessage = String(error)
+            logger.error({ err: error }, '未处理的请求错误')
+            errorMessage = '服务器内部错误'
+            statusCode = API_CODE.SERVER_ERROR
         }
 
         set.status = 200

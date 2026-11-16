@@ -27,17 +27,11 @@ export function fsExistsSync(path: string): boolean {
  * @returns 返回处理后的错误消息字符串
  */
 export function getErrorMessage(err: unknown) {
-    let message = ''
-    // 如果错误对象是字符串类型，则将其转换为大写并赋值给message
-    if (typeof err === 'string') {
-        message = err.toUpperCase()
-    }
-    // 如果错误对象是Error实例，则直接获取其message属性并赋值给message
-    else if (err instanceof Error) {
-        message = err.message
-    }
-    // 返回最终处理得到的错误消息
-    return message
+    if (typeof err === 'string')
+        return err
+    if (err instanceof Error)
+        return err.message
+    return ''
 }
 
 /**

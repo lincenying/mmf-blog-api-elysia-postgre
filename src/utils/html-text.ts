@@ -3,8 +3,8 @@
  */
 export function replaceHtmlTag(html: string) {
     return html
-        .replace(/<script(.*?)>/gi, '＜script$1＞')
-        .replace(/<\/script>/gi, '＜/script＞')
+        .replace(/<script\b([^>]*)>/gi, '＜script$1＞')
+        .replace(/<\/script\s*>/gi, '＜/script＞')
         .replace(/\$'/g, '$ \'')
         .replace(/\$`/g, '$ `')
 }

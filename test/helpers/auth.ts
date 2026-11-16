@@ -12,6 +12,22 @@ function buildCookieHeader(parts: Record<string, string>): string {
 }
 
 /**
+ * 签发后台管理员请求头，字段名与 Cookie 一致。
+ */
+export function adminAuthHeaders(
+    overrides: Partial<{ id: string, username: string }> = {},
+): Record<string, string> {
+    const id = overrides.id ?? FIXTURES.admin.id
+    const username = encodeURI(overrides.username ?? FIXTURES.admin.username)
+    const token = signSessionToken({ id, username }, 'admin')
+    return {
+        b_user: token,
+        b_userid: id,
+        b_username: username,
+    }
+}
+
+/**
  * 签发后台管理员会话 Cookie。
  */
 export function adminCookie(
