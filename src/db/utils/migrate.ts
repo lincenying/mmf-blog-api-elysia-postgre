@@ -40,6 +40,16 @@ function loadIndexStatements(folder: string) {
 }
 
 /**
+ * 旧库的 likes 只有主键。点赞语句按文章和用户做 ON CONFLICT，缺少唯一索引会失败。
+ */
+async function ensureLikesUniqueIndex(pgPool: Pool) {
+    await pgPool.query(`
+        CREATE UNIQUE INDEX IF NOT EXISTS likes_article_id_user_id_unique
+        ON likes (article_id, user_id)
+    `)
+}
+
+/**
  * 在已有库上幂等补齐基线里的索引。
  */
 async function applyIndexMigration(pgPool: Pool) {
@@ -47,6 +57,7 @@ async function applyIndexMigration(pgPool: Pool) {
     for (const statement of statements) {
         await pgPool.query(statement)
     }
+    await ensureLikesUniqueIndex(pgPool)
 }
 
 /**
